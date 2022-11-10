@@ -1,7 +1,17 @@
-import { StrictMode } from 'react'
+/**
+ * Package import
+ */
 import { createRoot } from 'react-dom/client'
-import { App } from '@/app'
+import { BrowserRouter } from 'react-router-dom'
+
+/**
+ * Local import
+ */
+import Router from './Router'
 import './index.css'
+import 'primereact/resources/themes/lara-light-indigo/theme.css' // theme
+import 'primereact/resources/primereact.min.css' // core css
+import 'primeicons/primeicons.css' // icons
 
 const rootElement = document.querySelector('[data-js="root"]')
 
@@ -11,7 +21,7 @@ if (!rootElement) {
 
 const root = createRoot(rootElement)
 root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <BrowserRouter>
+    <Router />
+  </BrowserRouter>,
 )
