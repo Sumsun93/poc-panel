@@ -60,6 +60,7 @@
   },
   "devDependencies": {
     "@types/styled-components": "^5.1.26",
+    "@types/js-cookie": "^3.0.2",
     "react-lottie": "^1.2.3"
   }
 }
