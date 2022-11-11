@@ -43,7 +43,8 @@ export interface Member {
   dateRegister: string;
   id: number;
   socialclub: string
-  status: string
+  status?: string
+  discordName?: string
 }
 
 export const { useGetCommunityQuery, useGetLastMembersQuery, useLazyGetMemberQuery, useLazyDeleteMemberQuery } = communityApi

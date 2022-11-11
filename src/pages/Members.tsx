@@ -20,7 +20,7 @@ import {
   useLazyDeleteMemberQuery,
   useLazyGetMemberQuery,
 } from '@/services/community'
-import StatCard from '@/components/Community/StatCard'
+import StatCard from '@/components/StatCard'
 import Loading from '@/components/Loading'
 
 /**

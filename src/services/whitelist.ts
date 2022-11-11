@@ -1,0 +1,41 @@
+/**
+ * Package import
+ */
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+/**
+ * Local import
+ */
+
+/**
+ * Code
+ */
+export const whitelistApi = createApi({
+  reducerPath: 'whitelistApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: import.meta.env.VITE_API_URL,
+    prepareHeaders: (headers, { getState }: {getState: any}) => {
+      const token = getState().auth.token
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`)
+      }
+      return headers
+    },
+  }),
+  endpoints: (builder) => ({
+    getDiscordData: builder.query({
+      query: () => '/whitelist/current',
+    }),
+    startSession: builder.query({
+      query: (nb: string) => `/discord/session/${nb}`,
+    }),
+    stopSessions: builder.query({
+      query: () => '/discord/stop',
+    }),
+    syncAllMembers: builder.query({
+      query: () => '/whitelist/sync',
+    }),
+  }),
+})
+
+export const { useGetDiscordDataQuery, useLazyStartSessionQuery, useLazyStopSessionsQuery, useLazySyncAllMembersQuery } = whitelistApi

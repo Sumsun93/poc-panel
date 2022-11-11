@@ -12,6 +12,7 @@ import userReducer from '../features/userSlice'
 import { authApi } from '@/services/authentication'
 import { profilApi } from '@/services/profil'
 import { communityApi } from '@/services/community'
+import { whitelistApi } from '@/services/whitelist'
 
 /**
  * Code
@@ -23,11 +24,13 @@ const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [profilApi.reducerPath]: profilApi.reducer,
     [communityApi.reducerPath]: communityApi.reducer,
+    [whitelistApi.reducerPath]: whitelistApi.reducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(
     authApi.middleware,
     profilApi.middleware,
     communityApi.middleware,
+    whitelistApi.middleware,
   ),
 })
 

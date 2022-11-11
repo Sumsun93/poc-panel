@@ -2,6 +2,7 @@
  * Package import
  */
 import styled from 'styled-components'
+import { Button } from 'primereact/button'
 
 /**
  * Local import
@@ -10,16 +11,22 @@ import styled from 'styled-components'
 /**
  * Component
  */
-const StatCard = ({ title, value, icon, iconBg }: any) => {
+const StatCard = ({ title, value, icon, iconBg = 'linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))', buttonText, buttonOnClick, buttonBg, buttonIcon }: any) => {
   return (
-    <Card>
+    <Card withButton={buttonOnClick}>
       <IconContainer bgColor={iconBg}>
         <i className={icon} />
       </IconContainer>
       <Content>
-        <Title>{title}</Title>
-        <Value>{value}</Value>
+        {title && <Title>{title}</Title>}
+        {value && <Value>{value}</Value>}
       </Content>
+      {(buttonOnClick) && (
+        <CustomButton bgColor={buttonBg || iconBg} onClick={buttonOnClick}>
+          {buttonIcon && <i className={buttonIcon} />}
+          {buttonText}
+        </CustomButton>
+      )}
     </Card>
   )
 }
@@ -42,6 +49,7 @@ const Card = styled.div`
   padding-top: 8px;
   padding-left: 16px;
   padding-right: 16px;
+  padding-bottom: ${({ withButton }: { withButton: boolean }) => withButton ? '3rem' : '0'};
   color: rgb(52, 71, 103);
   margin: 1rem;
 `
@@ -99,6 +107,28 @@ const Value = styled.div`
   vertical-align: unset;
   text-decoration: none;
   color: rgb(52, 71, 103);
+`
+
+const CustomButton = styled(Button)`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 0 0 0.75rem 0.75rem;
+  margin-top: 10rem;
+
+  i {
+    margin-right: 1rem;
+  }
+
+  ${({ bgColor }: { bgColor: string }) => bgColor && `
+    background: ${bgColor};
+    border: none;
+
+    &:hover {
+      background: ${bgColor} !important;
+    }
+  `}
 `
 
 export default StatCard
