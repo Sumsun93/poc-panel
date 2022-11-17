@@ -22,9 +22,11 @@ const StatCard = ({ title, value, icon, iconBg = 'linear-gradient(195deg, rgb(10
         {value && <Value>{value}</Value>}
       </Content>
       {(buttonOnClick) && (
-        <CustomButton bgColor={buttonBg || iconBg} onClick={buttonOnClick}>
+        <CustomButton bgcolor={buttonBg || iconBg} onClick={buttonOnClick}>
           {buttonIcon && <i className={buttonIcon} />}
-          {buttonText}
+          <ButtonText>
+            {buttonText}
+          </ButtonText>
         </CustomButton>
       )}
     </Card>
@@ -36,7 +38,7 @@ const Card = styled.div`
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   display: flex;
   position: relative;
-  width: 16rem;
+  min-width: 16rem;
   min-height: 100px;
   overflow-wrap: break-word;
   background-color: rgb(255, 255, 255);
@@ -121,14 +123,18 @@ const CustomButton = styled(Button)`
     margin-right: 1rem;
   }
 
-  ${({ bgColor }: { bgColor: string }) => bgColor && `
-    background: ${bgColor};
+  ${({ bgcolor }: { bgcolor: string }) => bgcolor && `
+    background: ${bgcolor};
     border: none;
 
     &:hover {
-      background: ${bgColor} !important;
+      background: ${bgcolor} !important;
     }
   `}
+`
+
+const ButtonText = styled.span`
+  width: 100%;
 `
 
 export default StatCard

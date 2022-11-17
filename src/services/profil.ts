@@ -29,7 +29,16 @@ export const profilApi = createApi({
     getRights: builder.query({
       query: () => '/profil/rights',
     }),
+    getCharacters: builder.query({
+      query: () => '/profil/characters',
+    }),
+    askWhitelist: builder.query({
+      query: () => '/profil/whitelist/ask',
+    }),
+    removeWhitelist: builder.query({
+      query: () => '/profil/whitelist/remove',
+    }),
   }),
 })
 
-export const { useGetProfilQuery, useGetRightsQuery } = profilApi
+export const { useGetProfilQuery, useLazyGetProfilQuery, useGetRightsQuery, useGetCharactersQuery, useLazyAskWhitelistQuery, useLazyRemoveWhitelistQuery } = profilApi

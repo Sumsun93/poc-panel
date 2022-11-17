@@ -5,7 +5,7 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
-import { confirmPopup, ConfirmPopup } from 'primereact/confirmPopup'
+import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup'
 import { Toast } from 'primereact/toast'
 import styled from 'styled-components'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -60,7 +60,6 @@ const Members = () => {
   useEffect(() => {
     if (resultDeleteMember.isUninitialized) return
 
-    console.log(resultDeleteMember)
     if (!resultDeleteMember.isLoading) {
       if (resultDeleteMember.isSuccess && resultDeleteMember.data.success) {
         // @ts-ignore
@@ -104,7 +103,6 @@ const Members = () => {
       acceptClassName: 'p-button-danger',
       rejectClassName: 'p-button-secondary p-button-outlined',
       accept: () => {
-        console.log('delete', id)
         triggerDeleteMember(id)
       },
     })

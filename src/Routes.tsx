@@ -15,6 +15,7 @@ import styled from 'styled-components'
 import { useGetProfilQuery, useGetRightsQuery } from '@/services/profil'
 import { setRights, setUser } from '@/features/userSlice'
 import pages from '@/constants/pages'
+import Dashboard from '@/pages/Dashboard'
 
 /**
  * Component
@@ -56,7 +57,6 @@ const Routes = () => {
   }, [rightsResult, dispatch])
 
   useEffect(() => {
-    console.log(error)
     if (error) {
       dispatch(disconnect())
     }
@@ -78,14 +78,14 @@ const Routes = () => {
                 {pages.reduce((acc: any, category) => [...acc, ...category.items], []).filter((item: any) => !item.right || rights[item.right]).map(({ Component, route }: any, index: number) => (
                   <Route key={index} path={route} element={<Component />} />
                 ))}
+                <Route path='*' element={<Dashboard />} />
               </>
               )
             : (
               <>
-                <Route path='/' element={<Home />} />
+                <Route path='*' element={<Home />} />
               </>
               )}
-          <Route path='*' element={<Home />} />
         </ReactRoutes>
       </Content>
     </Container>

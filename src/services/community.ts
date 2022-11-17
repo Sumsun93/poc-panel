@@ -38,8 +38,16 @@ export const communityApi = createApi({
   }),
 })
 
-export interface Member {
+interface MemberComment {
+  author: string;
   comment: string;
+  createdAt: number;
+  notation: number;
+}
+
+export interface Member {
+  lastComment: MemberComment;
+  allComments: MemberComment[];
   dateRegister: string;
   id: number;
   socialclub: string

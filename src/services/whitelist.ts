@@ -35,7 +35,15 @@ export const whitelistApi = createApi({
     syncAllMembers: builder.query({
       query: () => '/whitelist/sync',
     }),
+    setWhitelist: builder.mutation({
+      query: ({ body, id }: { body: { notation: number, comment: string }, id: number }) => ({
+        url: `/whitelist/${id}`,
+        method: 'POST',
+        body,
+      }),
+
+    }),
   }),
 })
 
-export const { useGetDiscordDataQuery, useLazyStartSessionQuery, useLazyStopSessionsQuery, useLazySyncAllMembersQuery } = whitelistApi
+export const { useGetDiscordDataQuery, useLazyStartSessionQuery, useLazyStopSessionsQuery, useLazySyncAllMembersQuery, useSetWhitelistMutation } = whitelistApi
