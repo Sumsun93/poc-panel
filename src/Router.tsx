@@ -20,7 +20,7 @@ const Router = () => (
       buttonText='Accepter et Fermer'
       buttonClasses='p-component p-button p-button-success'
       style={{ alignItems: 'center', background: 'linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25))' }}
-      buttonStyle={{ margin: '10px' }}
+      buttonStyle={{ lineHeight: '1rem', margin: '10px' }}
       disableButtonStyles
       cookieName='legalCookie'
       overlay

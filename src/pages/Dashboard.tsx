@@ -1,7 +1,7 @@
 /**
  * Package import
  */
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,6 +15,7 @@ import working from '@/assets/animations/working.json'
 import { useLazyAskWhitelistQuery, useLazyGetProfilQuery, useLazyRemoveWhitelistQuery } from '@/services/profil'
 import { disconnect } from '@/features/authSlice'
 import { setUser } from '@/features/userSlice'
+import { Toast } from 'primereact/toast'
 // import Loading from '@/components/Loading'
 // import CharacterCard from '@/components/CharacterCard'
 
@@ -28,6 +29,8 @@ const Dashboard = () => {
   const [removeWhitelist, removeWhitelistResult] = useLazyRemoveWhitelistQuery()
   const [getProfil, profilResult] = useLazyGetProfilQuery()
   const { insertionTime, whitelistStatut, whitelistNumber } = useSelector((state: any) => state.user)
+
+  const askToast = useRef(null)
 
   const defaultOptions = {
     loop: true,
@@ -44,14 +47,24 @@ const Dashboard = () => {
   }, [removeWhitelist])
 
   useEffect(() => {
-    if (askWhitelistResult.isSuccess) {
+    if (askWhitelistResult.isSuccess && askWhitelistResult.data.success) {
       getProfil('')
+      // @ts-ignore
+      askToast.current.show({ severity: 'success', summary: 'Demande envoyée', detail: 'Votre demande a bien été envoyée.', life: 3000 })
+    } else if (askWhitelistResult.isSuccess) {
+      // @ts-ignore
+      askToast.current.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, merci de contacter un membre de l\'équipe.', life: 3000 })
     }
   }, [askWhitelistResult, getProfil])
 
   useEffect(() => {
-    if (removeWhitelistResult.isSuccess) {
+    if (removeWhitelistResult.isSuccess && removeWhitelistResult.data.success) {
       getProfil('')
+      // @ts-ignore
+      askToast.current.show({ severity: 'success', summary: 'Demande annulée', detail: 'Votre demande a bien été annulée.', life: 3000 })
+    } else if (removeWhitelistResult.isSuccess) {
+      // @ts-ignore
+      askToast.current.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, merci de contacter un membre de l\'équipe.', life: 3000 })
     }
   }, [getProfil, removeWhitelistResult])
 
@@ -87,6 +100,7 @@ const Dashboard = () => {
 
   return (
     <Container>
+      <Toast ref={askToast} />
       <h1>Votre tableau de bord</h1>
       <StatsContainer>
         <StatCard value='Membre' title={`Depuis le ${insertionTime}`} icon='pi pi-user' />
@@ -97,7 +111,8 @@ const Dashboard = () => {
           <Lottie
             options={defaultOptions}
           />
-          <h2>En cours de développement</h2>
+          <h2>Serveur en cours de développement.</h2>
+          <h2 style={{ visibility: 'hidden', position: 'absolute' }}>Imagine ici on met une date de sortie ?</h2>
         </Working>
       </Content>
       {/* charactersLoading && <Loading /> */}
@@ -128,7 +143,7 @@ const StatsContainer = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
 `
 

@@ -36,21 +36,30 @@ const Login = () => {
   const { control, handleSubmit } = useForm({ defaultValues })
 
   const onSubmit = async (data: any) => {
-    const result = await login({
-      identifier: data.socialclub,
-      password: data.password,
-    }).unwrap()
+    try {
+      const result = await login({
+        identifier: data.socialclub,
+        password: data.password,
+      }).unwrap()
 
-    if (result.success) {
-      dispatch(setConnected(true))
-      dispatch(setToken(result.token))
+      if (result.success) {
+        dispatch(setConnected(true))
+        dispatch(setToken(result.token))
 
-      if (rememberMe) {
-        localStorage.setItem('token', result.token)
+        if (rememberMe) {
+          localStorage.setItem('token', result.token)
+        }
+      } else {
+        // @ts-ignore
+        loginErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Le socialclub ou le mot de passe est incorrect' })
       }
-    } else {
+    } catch (e: any) {
+      let message = 'Le socialclub ou le mot de passe est incorrect'
+      if (e.data?.messages?.errors && Object.keys(e.data?.messages?.errors).length) {
+        message = Object.keys(e.data?.messages?.errors).map((key) => e.data?.messages?.errors[key]).join(' ')
+      }
       // @ts-ignore
-      loginErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Le socialclub ou le mot de passe est incorrect' })
+      loginErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: message })
     }
   }
 
@@ -61,7 +70,7 @@ const Login = () => {
   const renderInput = (name: 'socialclub' | 'password', type: string = 'text') => (
     <Controller
       name={name} control={control} rules={{ required: `Le ${name} est requis.` }} render={({ field, fieldState }) => (
-        <InputText type={type} id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.error })} />
+        <InputText style={{ width: '250px' }} type={type} id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.error })} />
       )}
     />
   )
@@ -103,6 +112,14 @@ const ButtonStyled = styled(Button)`
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  background-color: #FFC115;
+  color: #000;
+  border: 1px solid #FFC115;
+
+  &:hover {
+    background-color: #FFC115 !important;
+    border: 1px solid #fff !important;
+  }
 `
 
 const Remember = styled.div`

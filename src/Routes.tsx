@@ -16,6 +16,7 @@ import { useGetProfilQuery, useGetRightsQuery } from '@/services/profil'
 import { setRights, setUser } from '@/features/userSlice'
 import pages from '@/constants/pages'
 import Dashboard from '@/pages/Dashboard'
+import Page from '@/components/Page'
 
 /**
  * Component
@@ -75,8 +76,8 @@ const Routes = () => {
             ? (
               <>
                 {/* concat all routes in categories */}
-                {pages.reduce((acc: any, category) => [...acc, ...category.items], []).filter((item: any) => !item.right || rights[item.right]).map(({ Component, route }: any, index: number) => (
-                  <Route key={index} path={route} element={<Component />} />
+                {pages.reduce((acc: any, category) => [...acc, ...category.items], []).filter((item: any) => !item.right || rights[item.right]).map(({ Component, route, label }: any, index: number) => (
+                  <Route key={index} path={route} element={<Page title={label} Component={Component} />} />
                 ))}
                 <Route path='*' element={<Dashboard />} />
               </>

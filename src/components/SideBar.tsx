@@ -45,7 +45,14 @@ const SideBar = () => {
         <>
           {title && <Title>{title}</Title>}
           {authItems.map((item, index) => (
-            <NavButton to={item.route} key={index} end>
+            <NavButton
+              onClick={() => {
+                // if active page, refresh component
+                if (window.location.pathname === item.route) {
+                  navigate('/', { replace: true, state: { refresh: 'test' } })
+                }
+              }} to={item.route} key={index} end
+            >
               <i className={item.icon} />
               {item.label}
             </NavButton>

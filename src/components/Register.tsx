@@ -19,12 +19,21 @@ import { setIsRegistering } from '@/features/authSlice'
 /**
  * Component
  */
-type inputNameType = 'socialclub' | 'email' | 'confirmEmail' | 'password' | 'confirmPassword'
+interface FormValues {
+  socialclub: string;
+  email: string;
+  confirmEmail: string;
+  password: string;
+  confirmPassword: string;
+}
 
 type inputType = {
-  name: inputNameType
+  name: keyof FormValues
   label: string
   type?: string
+  required?: string
+  pattern?: RegExp
+  validate?: (value: string) => boolean | string
 }
 
 const Login = () => {
@@ -41,7 +50,7 @@ const Login = () => {
     confirmPassword: '',
   }
 
-  const { control, handleSubmit } = useForm({ defaultValues })
+  const { control, handleSubmit, formState: { errors }, getValues } = useForm<FormValues>({ defaultValues })
 
   const onSubmit = async (data: any) => {
     if (data.email !== data.confirmEmail) {
@@ -64,20 +73,37 @@ const Login = () => {
 
     if (result.success) {
       dispatch(setIsRegistering(false))
-    } else {
       // @ts-ignore
-      registerErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: result.message })
+      registerErrorToast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Votre compte a bien été créé et un mail vous a été envoyé.' })
+    } else if (result.messages.errors) {
+      const allErrors = Object.keys(result.messages.errors).map((key) => result.messages.errors[key]).join('\n')
+      // @ts-ignore
+      registerErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: allErrors })
     }
   }
 
-  const renderInput = (key: number, name: inputNameType, label: string, type: string = 'text') => (
-    <span key={key} className='p-float-label'>
-      <Controller
-        name={name} control={control} rules={{ required: `Le ${name} est requis.` }} render={({ field, fieldState }) => (
-          <InputText type={type} id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.error })} />
-        )}
-      />
-      <label htmlFor={name}>{label}</label>
+  const getFormErrorMessage = (name: keyof FormValues) => {
+    return errors[name] && <small className='p-error' style={{ position: 'absolute', bottom: '-1.2rem', width: '100%', fontSize: '.8rem' }}>{errors[name]?.message}</small>
+  }
+
+  const renderInput = (key: number, input: inputType) => (
+    <span style={{ position: 'relative', margin: '.3rem 0' }}>
+      <span key={key} className='p-float-label' style={{ width: '300px' }}>
+        <Controller
+          name={input.name}
+          control={control}
+          rules={{
+            required: input.required,
+            pattern: input.pattern,
+            validate: input.validate,
+          }}
+          render={({ field, fieldState }) => (
+            <InputText style={{ width: '300px' }} type={input.type} id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.error })} />
+          )}
+        />
+        <label htmlFor={input.name}>{input.label}</label>
+      </span>
+      {getFormErrorMessage(input.name)}
     </span>
   )
 
@@ -85,31 +111,50 @@ const Login = () => {
     {
       name: 'socialclub',
       label: 'Socialclub',
+      required: 'Le socialclub est requis.',
     },
     {
       name: 'email',
       label: 'Email',
+      required: 'L\'email est requis.',
+      validate: (value) => {
+        const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
+        return emailRegex.test(value) || 'L\'email n\'est pas valide.'
+      },
     },
     {
       name: 'confirmEmail',
       label: 'Confirmer l\'email',
+      required: 'La confirmation de l\'email est requise.',
+      validate: (value) => value === getValues('email') || 'Les emails ne correspondent pas.',
     },
     {
       name: 'password',
       label: 'Mot de passe',
       type: 'password',
+      required: 'Le mot de passe est requis.',
+      // regex 8 characters, 1 uppercase, 1 lowercase, 1 number
+      validate: (value) => {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
+        return regex.test(value) || '8 caractères, une maj., une min. et un nombre.'
+      },
     },
     {
       name: 'confirmPassword',
       label: 'Confirmer le mot de passe',
       type: 'password',
+      required: 'La confirmation du mot de passe est requise.',
+      validate: (value) => {
+        const password = getValues('password')
+        return password === value || 'Les mots de passe ne correspondent pas.'
+      },
     },
   ]
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
       <Toast ref={registerErrorToast} />
-      {inputs.map((input, index) => renderInput(index, input.name, input.label, input.type))}
+      {inputs.map((input, index) => renderInput(index, input))}
       <ButtonStyled loading={isLoading} type='submit'>S'inscrire</ButtonStyled>
     </Form>
   )
@@ -132,6 +177,14 @@ const ButtonStyled = styled(Button)`
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  background-color: #FFC115;
+  color: #000;
+  border: 1px solid #FFC115;
+
+  &:hover {
+    background-color: #FFC115 !important;
+    border: 1px solid #fff !important;
+  }
 `
 
 export default Login
