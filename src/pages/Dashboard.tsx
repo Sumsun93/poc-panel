@@ -104,7 +104,7 @@ const Dashboard = () => {
       <h1>Votre tableau de bord</h1>
       <StatsContainer>
         <StatCard value='Membre' title={`Depuis le ${insertionTime}`} icon='pi pi-user' />
-        <StatCard value={whitelistStatut} title='Whitelist' iconBg='linear-gradient(195deg,rgb(255 189 103),rgb(205 137 3))' icon='pi pi-users' buttonText={buttonWhitelist?.label} buttonIcon={buttonWhitelist?.icon} buttonOnClick={buttonWhitelist?.callback} />
+        <StatCard value={whitelistStatut} title='Whitelist' icon='pi pi-users' buttonText={buttonWhitelist?.label} buttonIcon={buttonWhitelist?.icon} buttonOnClick={buttonWhitelist?.callback} />
       </StatsContainer>
       <Content>
         <Working>
@@ -151,7 +151,7 @@ const Content = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
 `
 
 const Working = styled.div`
@@ -161,7 +161,6 @@ const Working = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 5rem;
 `
 
 export default Dashboard

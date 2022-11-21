@@ -54,7 +54,7 @@ const Register = () => {
     confirmPassword: '',
   }
 
-  const { control, handleSubmit, formState: { errors }, getValues } = useForm<FormValues>({ defaultValues })
+  const { control, handleSubmit, formState: { errors }, getValues, reset } = useForm<FormValues>({ defaultValues })
 
   const onSubmit = async (data: any) => {
     if (data.email !== data.confirmEmail) {
@@ -79,6 +79,8 @@ const Register = () => {
       dispatch(setIsRegistering(false))
       // @ts-ignore
       registerErrorToast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Votre compte a bien été créé et un mail vous a été envoyé.' })
+
+      reset()
     } else if (result.messages.errors) {
       const allErrors = Object.keys(result.messages.errors).map((key) => result.messages.errors[key]).join('\n')
       // @ts-ignore

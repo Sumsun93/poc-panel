@@ -258,24 +258,31 @@ const Whitelist = () => {
     )
   }
 
-  const lastCommentBodyTemplate = (rowData: any) => (
-    <>
-      <div className={`p-d-flex p-flex-column last-comment-${rowData.id}`}>
-        <div className='p-d-flex p-flex-row p-jc-between'>
-          <span className='p-text-bold'>De: {rowData.lastComment?.author}</span>
-        </div>
-        <div className='p-d-flex p-flex-row p-jc-between'>
-          <span>Le: {new Date(rowData.lastComment?.created_at).toLocaleString()}</span>
-        </div>
-        <div className='p-d-flex p-flex-row p-jc-between'>
-          <Rating value={rowData.lastComment?.notation} readOnly cancel={false} onIconProps={onIconProps(rowData.lastComment?.notation)} />
-        </div>
-      </div>
-      <Tooltip target={`.last-comment-${rowData.id}`} mouseTrack position='top'>
-        {rowData.lastComment?.comment}
-      </Tooltip>
-    </>
-  )
+  const lastCommentBodyTemplate = (rowData: any) => {
+    if (rowData.lastComment) {
+      return (
+        <>
+          <div className={`p-d-flex p-flex-column last-comment-${rowData.id}`}>
+            <div className='p-d-flex p-flex-row p-jc-between'>
+              <span className='p-text-bold'>De: {rowData.lastComment?.author}</span>
+            </div>
+            <div className='p-d-flex p-flex-row p-jc-between'>
+              <span>Le: {new Date(rowData.lastComment?.created_at).toLocaleString()}</span>
+            </div>
+            <div className='p-d-flex p-flex-row p-jc-between'>
+              <Rating value={rowData.lastComment?.notation} readOnly cancel={false} onIconProps={onIconProps(rowData.lastComment?.notation)} />
+            </div>
+          </div>
+          <Tooltip target={`.last-comment-${rowData.id}`} mouseTrack position='top'>
+            {rowData.lastComment?.comment}
+          </Tooltip>
+        </>
+      )
+    }
+    return (
+      <span className='p-text-bold'>Aucun commentaire</span>
+    )
+  }
 
   const defaultOptions = {
     loop: true,
@@ -478,7 +485,7 @@ const AllComments = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   width: 100%;
-  height: calc(100% - 19rem);
+  height: calc(100% - 20rem);
   overflow-y: auto;
 `
 
