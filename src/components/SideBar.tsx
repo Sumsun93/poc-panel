@@ -83,7 +83,7 @@ const SideBar = () => {
         Se déconnecter
       </DisconnectButton>
       <Version>
-        v0.0.69
+        v0.0.70
       </Version>
     </Container>
   )

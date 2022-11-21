@@ -88,11 +88,11 @@ const Routes = () => {
             : (
               <>
                 <Route path='/register' element={<Register />} />
-                <Route path='/reset' element={<WantResetPassword />} />
-                <Route path='/reset/:userId/:token/:check' element={<ResetPassword />} />
                 <Route path='*' element={<Login />} />
               </>
               )}
+          <Route path='/reset-password' element={<WantResetPassword />} />
+          <Route path='/reset' element={<ResetPassword />} />
         </ReactRoutes>
       </Content>
     </Container>

@@ -110,7 +110,7 @@ const Login = () => {
         <NavButton className='p-button-outlined' onClick={() => navigate('/register')}>
           S'inscrire
         </NavButton>
-        <BackButton onClick={() => navigate('/reset')}>
+        <BackButton onClick={() => navigate('/reset-password')}>
           Mot de passe oublié ?
         </BackButton>
         <Cgu titleButton='Se connecter' />

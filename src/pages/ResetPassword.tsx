@@ -1,14 +1,14 @@
 /**
  * Package import
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { useForm, Controller } from 'react-hook-form'
 import classNames from 'classnames'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 /**
  * Local import
@@ -22,13 +22,20 @@ import Loading from '@/components/Loading'
  */
 const ResetPassword = () => {
   const navigate = useNavigate()
-  const { userId, check, token } = useParams()
+  const [searchParams] = useSearchParams()
   const [changePassword, { isLoading }] = useChangePasswordMutation()
   const [sendCheck, { isLoading: isLoadingCheck }] = useCheckResetMutation()
 
   const [isValid, setIsValid] = useState(false)
 
   const resetToast = useRef(null)
+
+  const { userId, token, check } = useMemo(() => ({
+    userId: searchParams.get('userId'),
+    token: searchParams.get('token'),
+    check: searchParams.get('check'),
+  })
+  , [searchParams])
 
   interface FormValues {
     password: string;
