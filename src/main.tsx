@@ -18,7 +18,7 @@ const rootElement = document.querySelector('[data-js="root"]')
 if (!rootElement) {
   throw new Error('Failed to find the root element')
 }
-
+// basename='/poc-panel'
 const root = createRoot(rootElement)
 root.render(
   <BrowserRouter>

@@ -39,6 +39,7 @@ export const authSlice = createSlice({
       state.connected = false
       state.token = ''
       localStorage.removeItem('token')
+      sessionStorage.removeItem('token')
     },
   },
 })

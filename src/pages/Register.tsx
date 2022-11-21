@@ -7,14 +7,17 @@ import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { useForm, Controller } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import classNames from 'classnames'
 
 /**
  * Local import
  */
 import { useRegisterMutation } from '@/services/authentication'
-import { useDispatch } from 'react-redux'
 import { setIsRegistering } from '@/features/authSlice'
+import HomeTemplate from '@/components/HomeTemplate'
+import Cgu from '@/components/Cgu'
 
 /**
  * Component
@@ -36,8 +39,9 @@ type inputType = {
   validate?: (value: string) => boolean | string
 }
 
-const Login = () => {
+const Register = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [register, { isLoading }] = useRegisterMutation()
 
   const registerErrorToast = useRef(null)
@@ -87,8 +91,8 @@ const Login = () => {
   }
 
   const renderInput = (key: number, input: inputType) => (
-    <span style={{ position: 'relative', margin: '.3rem 0' }}>
-      <span key={key} className='p-float-label' style={{ width: '300px' }}>
+    <span key={key} style={{ position: 'relative', margin: '.3rem 0' }}>
+      <span className='p-float-label' style={{ width: '300px' }}>
         <Controller
           name={input.name}
           control={control}
@@ -152,11 +156,17 @@ const Login = () => {
   ]
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <Toast ref={registerErrorToast} />
-      {inputs.map((input, index) => renderInput(index, input))}
-      <ButtonStyled loading={isLoading} type='submit'>S'inscrire</ButtonStyled>
-    </Form>
+    <HomeTemplate>
+      <>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <Toast ref={registerErrorToast} />
+          {inputs.map((input, index) => renderInput(index, input))}
+          <ButtonStyled loading={isLoading} type='submit'>S'inscrire</ButtonStyled>
+        </Form>
+        <NavButton className='p-button-outlined' onClick={() => navigate('/')}>Connexion</NavButton>
+        <Cgu titleButton={'S\'inscrire'} />
+      </>
+    </HomeTemplate>
   )
 }
 
@@ -187,4 +197,17 @@ const ButtonStyled = styled(Button)`
   }
 `
 
-export default Login
+const NavButton = styled(Button)`
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
+  color: #FFC115 !important;
+
+  &:hover {
+    color: #fff !important;
+    border: 1px solid #fff !important;
+  }
+`
+
+export default Register

@@ -16,12 +16,17 @@ import { useDispatch } from 'react-redux'
  */
 import { useLoginMutation } from '@/services/authentication'
 import { setConnected, setToken } from '@/features/authSlice'
+import HomeTemplate from '@/components/HomeTemplate'
+import Cgu from '@/components/Cgu'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * Component
  */
 const Login = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
+
   const [login, { isLoading }] = useLoginMutation()
 
   const [rememberMe, setRememberMe] = useState(false)
@@ -33,7 +38,7 @@ const Login = () => {
     password: '',
   }
 
-  const { control, handleSubmit } = useForm({ defaultValues })
+  const { control, handleSubmit, formState: { errors } } = useForm({ defaultValues })
 
   const onSubmit = async (data: any) => {
     try {
@@ -48,6 +53,8 @@ const Login = () => {
 
         if (rememberMe) {
           localStorage.setItem('token', result.token)
+        } else {
+          sessionStorage.setItem('token', result.token)
         }
       } else {
         // @ts-ignore
@@ -67,31 +74,48 @@ const Login = () => {
     setRememberMe(evt.checked)
   }
 
-  const renderInput = (name: 'socialclub' | 'password', type: string = 'text') => (
+  const getFormErrorMessage = (name: 'socialclub' | 'password') => {
+    return errors[name] && <small className='p-error' style={{ position: 'absolute', bottom: '-1.2rem', left: 0, width: '100%', fontSize: '.8rem' }}>{errors[name]?.message}</small>
+  }
+
+  const renderInput = (name: 'socialclub' | 'password', label: string, type: string = 'text') => (
     <Controller
-      name={name} control={control} rules={{ required: `Le ${name} est requis.` }} render={({ field, fieldState }) => (
+      name={name} control={control} rules={{ required: `Le ${label} est requis.` }} render={({ field, fieldState }) => (
         <InputText style={{ width: '250px' }} type={type} id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.error })} />
       )}
     />
   )
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <Toast ref={loginErrorToast} />
-      <span className='p-float-label'>
-        {renderInput('socialclub')}
-        <label htmlFor='socialclub'>Socialclub</label>
-      </span>
-      <span className='p-float-label'>
-        {renderInput('password', 'password')}
-        <label htmlFor='password'>Mot de passe</label>
-      </span>
-      <Remember>
-        <Checkbox onChange={handleRememberMe} checked={rememberMe} inputId='remember' />
-        <label htmlFor='remember'>Se souvenir de moi</label>
-      </Remember>
-      <ButtonStyled loading={isLoading} type='submit'>Se connecter</ButtonStyled>
-    </Form>
+    <HomeTemplate>
+      <>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <Toast ref={loginErrorToast} />
+          <span className='p-float-label' style={{ position: 'relative' }}>
+            {renderInput('socialclub', 'socialclub')}
+            <label htmlFor='socialclub'>Socialclub</label>
+            {getFormErrorMessage('socialclub')}
+          </span>
+          <span className='p-float-label' style={{ position: 'relative' }}>
+            {renderInput('password', 'mot de passe', 'password')}
+            <label htmlFor='password'>Mot de passe</label>
+            {getFormErrorMessage('password')}
+          </span>
+          <Remember>
+            <Checkbox onChange={handleRememberMe} checked={rememberMe} inputId='remember' />
+            <label htmlFor='remember'>Se souvenir de moi</label>
+          </Remember>
+          <ButtonStyled loading={isLoading} type='submit'>Se connecter</ButtonStyled>
+        </Form>
+        <NavButton className='p-button-outlined' onClick={() => navigate('/register')}>
+          S'inscrire
+        </NavButton>
+        <BackButton onClick={() => navigate('/reset')}>
+          Mot de passe oublié ?
+        </BackButton>
+        <Cgu titleButton='Se connecter' />
+      </>
+    </HomeTemplate>
   )
 }
 
@@ -122,6 +146,19 @@ const ButtonStyled = styled(Button)`
   }
 `
 
+const NavButton = styled(Button)`
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
+  color: #FFC115 !important;
+
+  &:hover {
+    color: #fff !important;
+    border: 1px solid #fff !important;
+  }
+`
+
 const Remember = styled.div`
   display: flex;
   align-items: center;
@@ -132,6 +169,16 @@ const Remember = styled.div`
     color: white;
     cursor: pointer;
   }
+`
+
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  color: #FFC115;
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 1rem;
 `
 
 export default Login

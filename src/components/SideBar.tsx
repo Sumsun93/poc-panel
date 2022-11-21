@@ -49,7 +49,7 @@ const SideBar = () => {
               onClick={() => {
                 // if active page, refresh component
                 if (window.location.pathname === item.route) {
-                  navigate('/', { replace: true, state: { refresh: 'test' } })
+                  navigate('/')
                 }
               }} to={item.route} key={index} end
             >
@@ -82,6 +82,9 @@ const SideBar = () => {
         <i className='pi pi-sign-out mr-2' />
         Se déconnecter
       </DisconnectButton>
+      <Version>
+        v1.0.0
+      </Version>
     </Container>
   )
 }
@@ -154,7 +157,7 @@ const NavButton = styled(NavLink)`
 
 const DisconnectButton = styled(Button)`
   position: absolute;
-  bottom: 1rem;
+  bottom: 2.5rem;
   width: calc(100% - 2rem);
   display: flex;
   justify-content: space-evenly;
@@ -186,6 +189,16 @@ const Divider = styled.hr`
   opacity: 0.25;
   background-color: transparent;
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0), rgb(255, 255, 255), rgba(255, 255, 255, 0)) !important;
+`
+
+const Version = styled.p`
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0 1rem;
+  color: #FFC115;
+  font-size: 0.75rem;
+  text-align: center;
 `
 
 export default SideBar

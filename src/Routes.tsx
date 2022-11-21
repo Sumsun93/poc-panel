@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from 'react-redux'
 /**
  * Local import
  */
-import Home from '@/pages/Home'
 import { useEffect } from 'react'
 import { disconnect, setConnected, setToken } from '@/features/authSlice'
 import SideBar from '@/components/SideBar'
@@ -17,6 +16,10 @@ import { setRights, setUser } from '@/features/userSlice'
 import pages from '@/constants/pages'
 import Dashboard from '@/pages/Dashboard'
 import Page from '@/components/Page'
+import Login from '@/pages/Login'
+import Register from '@/pages/Register'
+import WantResetPassword from '@/pages/WantResetPassword'
+import ResetPassword from '@/pages/ResetPassword'
 
 /**
  * Component
@@ -29,7 +32,7 @@ const Routes = () => {
   const { data: rightsResult, isLoading: rightsLoading } = useGetRightsQuery('', { skip: !connected })
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     if (token) {
       dispatch(setConnected(true))
       dispatch(setToken(token))
@@ -84,7 +87,10 @@ const Routes = () => {
               )
             : (
               <>
-                <Route path='*' element={<Home />} />
+                <Route path='/register' element={<Register />} />
+                <Route path='/reset' element={<WantResetPassword />} />
+                <Route path='/reset/:userId/:token/:check' element={<ResetPassword />} />
+                <Route path='*' element={<Login />} />
               </>
               )}
         </ReactRoutes>
