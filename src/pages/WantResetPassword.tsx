@@ -42,7 +42,7 @@ const WantResetPassword = () => {
     email: '',
   }
 
-  const { control, handleSubmit, formState: { errors } } = useForm({ defaultValues })
+  const { control, handleSubmit, formState: { errors }, reset: resetForm } = useForm<FormValues>({ defaultValues })
 
   const inputs: inputType[] = [
     {
@@ -76,6 +76,13 @@ const WantResetPassword = () => {
           detail: 'Un email vous a été envoyé',
           life: 3000,
         })
+
+        resetForm()
+
+        setTimeout(() => {
+          navigate('/login')
+        }
+        , 3000)
       } else {
         // @ts-ignore
         resetToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 })
