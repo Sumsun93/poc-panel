@@ -4,7 +4,6 @@
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { InputText } from 'primereact/inputtext'
-import { Button } from 'primereact/button'
 import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup'
 import { Toast } from 'primereact/toast'
 import styled from 'styled-components'
@@ -22,6 +21,7 @@ import {
 } from '@/services/community'
 import StatCard from '@/components/StatCard'
 import Loading from '@/components/Loading'
+import Button from '@/components/Button'
 
 /**
  * Component
@@ -113,10 +113,21 @@ const Members = () => {
   const actionBodyTemplate = (rowData: any) => {
     return (
       <>
-        <Button icon='pi pi-trash' className='p-button-sm p-button-rounded p-button-danger p-button-text' onClick={handleWantDelete(rowData)} />
+        <Button gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' onClick={handleWantDelete(rowData)} aloneContent style={{ width: 'fit-content', margin: '0' }}>
+          <i style={{ fontSize: '1rem' }} className='pi pi-trash' />
+        </Button>
       </>
     )
   }
+
+  /*
+    * Render{community?.numberSuscribe && <StatCard title='Membres inscrits' value={community?.numberSuscribe} iconBg='linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25))' icon='pi pi-users' />}
+              {community?.numberAdastra && <StatCard title='Membres Adastra' value={community?.numberAdastra} iconBg='linear-gradient(195deg,rgb(152 78 189),rgb(136 0 155))' icon='pi pi-apple' />}
+              {community?.numberNotValid && <StatCard title='Nouveaux comptes' value={community?.numberNotValid} iconBg='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))' icon='pi pi-user-plus' />}
+              {community?.numberCandidat && <StatCard title='Candidats en attente' value={community?.numberCandidat} iconBg='linear-gradient(195deg,rgb(255 189 103),rgb(205 137 3))' icon='pi pi-user' />}
+              {community?.numberWhitelist && <StatCard title='Candidats validés' value={community?.numberWhitelist} icon='pi pi-shield' />}
+              {community?.numberRefus && <StatCard title='Candidats refusés' value={community?.numberRefus} iconBg='linear-gradient(195deg,rgb(215 122 122),rgb(211 15 15))' icon='pi pi-times-circle' />}
+   */
 
   return (
     <Container>
@@ -130,9 +141,9 @@ const Members = () => {
               {community?.numberSuscribe && <StatCard title='Membres inscrits' value={community?.numberSuscribe} iconBg='linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25))' icon='pi pi-users' />}
               {community?.numberAdastra && <StatCard title='Membres Adastra' value={community?.numberAdastra} iconBg='linear-gradient(195deg,rgb(152 78 189),rgb(136 0 155))' icon='pi pi-apple' />}
               {community?.numberNotValid && <StatCard title='Nouveaux comptes' value={community?.numberNotValid} iconBg='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))' icon='pi pi-user-plus' />}
-              {community?.numberCandidat && <StatCard title='Candidats en attente' value={community?.numberCandidat} iconBg='linear-gradient(195deg,rgb(255 189 103),rgb(205 137 3))' icon='pi pi-user' />}
+              {community?.numberCandidat && <StatCard title='Candidats en attente' value={community?.numberCandidat} iconBg='linear-gradient(195deg,rgb(255 189 103),rgb(255 193 21))' icon='pi pi-user' />}
               {community?.numberWhitelist && <StatCard title='Candidats validés' value={community?.numberWhitelist} icon='pi pi-shield' />}
-              {community?.numberRefus && <StatCard title='Candidats refusés' value={community?.numberRefus} iconBg='linear-gradient(195deg,rgb(215 122 122),rgb(211 15 15))' icon='pi pi-times-circle' />}
+              {community?.numberRefus && <StatCard title='Candidats refusés' value={community?.numberRefus} iconBg='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' icon='pi pi-times-circle' />}
             </Community>
 
             <MembersList>
@@ -165,6 +176,10 @@ const Container = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1rem;
+
+  h1 {
+    margin-bottom: 2rem;
+  }
 `
 
 const Community = styled.div`

@@ -82,14 +82,16 @@ const Dashboard = () => {
     switch (whitelistNumber) {
       case 0:
         return {
-          label: 'Demande de candidature',
+          label: 'Devenir candidat',
           icon: 'pi pi-fw pi-user-plus',
+          iconBg: 'linear-gradient(195deg,rgb(255, 189, 103),rgb(255, 193, 21))',
           callback: handleAskWhitelist,
         }
       case 1:
         return {
           label: 'Annuler la demande',
           icon: 'pi pi-fw pi-user-minus',
+          iconBg: 'linear-gradient(195deg,rgb(178, 120, 212),rgb(146, 92, 177))',
           callback: handleCancelWhitelist,
         }
       default: {
@@ -103,8 +105,8 @@ const Dashboard = () => {
       <Toast ref={askToast} />
       <h1>Votre tableau de bord</h1>
       <StatsContainer>
-        <StatCard value='Membre' title={`Depuis le ${insertionTime}`} icon='pi pi-user' />
-        <StatCard value={whitelistStatut} title='Whitelist' icon='pi pi-users' buttonText={buttonWhitelist?.label} buttonIcon={buttonWhitelist?.icon} buttonOnClick={buttonWhitelist?.callback} />
+        <StatCard title='Communauté' value='Membre' desc={`Inscrit depuis le ${insertionTime}`} icon='pi pi-user' />
+        <StatCard value={whitelistStatut} title='Whitelist' icon='pi pi-users' iconBg={buttonWhitelist?.iconBg} buttonText={buttonWhitelist?.label} buttonIcon={buttonWhitelist?.icon} buttonOnClick={buttonWhitelist?.callback} />
       </StatsContainer>
       <Content>
         <Working>
@@ -136,6 +138,10 @@ const Container = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1rem;
+
+  h1 {
+    margin-bottom: 2rem;
+  }
 `
 
 const StatsContainer = styled.div`

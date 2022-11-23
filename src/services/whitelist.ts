@@ -41,9 +41,11 @@ export const whitelistApi = createApi({
         method: 'POST',
         body,
       }),
-
+    }),
+    getStatus: builder.query({
+      query: () => '/discord/status',
     }),
   }),
 })
 
-export const { useGetDiscordDataQuery, useLazyStartSessionQuery, useLazyStopSessionsQuery, useLazySyncAllMembersQuery, useSetWhitelistMutation } = whitelistApi
+export const { useGetDiscordDataQuery, useLazyStartSessionQuery, useLazyStopSessionsQuery, useLazySyncAllMembersQuery, useSetWhitelistMutation, useGetStatusQuery } = whitelistApi

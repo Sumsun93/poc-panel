@@ -2,32 +2,35 @@
  * Package import
  */
 import styled from 'styled-components'
-import { Button } from 'primereact/button'
 
 /**
  * Local import
  */
+import Button from './Button'
 
 /**
  * Component
  */
-const StatCard = ({ title, value, icon, iconBg = 'linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))', buttonText, buttonOnClick, buttonBg, buttonIcon }: any) => {
+const StatCard = ({ title, value, desc, icon, iconBg = 'linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))', buttonText, buttonOnClick, buttonBg, buttonIcon }: any) => {
   return (
-    <Card withButton={buttonOnClick}>
+    <Card>
       <IconContainer bgColor={iconBg}>
         <i className={icon} />
       </IconContainer>
       <Content>
         {title && <Title>{title}</Title>}
         {value && <Value>{value}</Value>}
+        {desc && <Desc>{desc}</Desc>}
       </Content>
       {(buttonOnClick) && (
-        <CustomButton bgcolor={buttonBg || iconBg} onClick={buttonOnClick}>
-          {buttonIcon && <i className={buttonIcon} />}
-          <ButtonText>
-            {buttonText}
-          </ButtonText>
-        </CustomButton>
+        <Button gradient={buttonBg || iconBg} onClick={buttonOnClick}>
+          <>
+            {buttonIcon && <i className={buttonIcon} />}
+            <ButtonText>
+              {buttonText}
+            </ButtonText>
+          </>
+        </Button>
       )}
     </Card>
   )
@@ -37,6 +40,7 @@ const Card = styled.div`
   color: rgba(0, 0, 0, 0.87);
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   display: flex;
+  flex-direction: column;
   position: relative;
   min-width: 16rem;
   min-height: 100px;
@@ -51,18 +55,18 @@ const Card = styled.div`
   padding-top: 8px;
   padding-left: 16px;
   padding-right: 16px;
-  padding-bottom: ${({ withButton }: { withButton: boolean }) => withButton ? '3rem' : '0'};
   color: rgb(52, 71, 103);
   margin: 1rem;
 `
 
 const IconContainer = styled.div`
+  position: absolute;
+  top: -24px;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 4rem;
   height: 4rem;
-  margin-top: -24px;
   opacity: 1;
   background: ${({ bgColor }: { bgColor: string }) => bgColor || 'linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))'};
   color: rgb(255, 255, 255);
@@ -111,26 +115,18 @@ const Value = styled.div`
   color: rgb(52, 71, 103);
 `
 
-const CustomButton = styled(Button)`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  border-radius: 0 0 0.75rem 0.75rem;
-  margin-top: 10rem;
-
-  i {
-    margin-right: 1rem;
-  }
-
-  ${({ bgcolor }: { bgcolor: string }) => bgcolor && `
-    background: ${bgcolor};
-    border: none;
-
-    &:hover {
-      background: ${bgcolor} !important;
-    }
-  `}
+const Desc = styled.div`
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02857em;
+  opacity: 1;
+  text-transform: none;
+  vertical-align: unset;
+  text-decoration: none;
+  color: rgb(123, 128, 154);
 `
 
 const ButtonText = styled.span`

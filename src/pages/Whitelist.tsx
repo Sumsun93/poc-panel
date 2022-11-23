@@ -5,16 +5,15 @@ import styled from 'styled-components'
 import StatCard from '@/components/StatCard'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
-import { Button } from 'primereact/button'
 import { OverlayPanel } from 'primereact/overlaypanel'
 import {
-  useGetDiscordDataQuery,
+  useGetDiscordDataQuery, useGetStatusQuery,
   useLazyStartSessionQuery,
   useLazyStopSessionsQuery,
   useLazySyncAllMembersQuery,
   useSetWhitelistMutation,
 } from '@/services/whitelist'
-import { useMemo, useRef, useState, useEffect } from 'react'
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { Member } from '@/services/community'
 import { InputTextarea } from 'primereact/inputtextarea'
@@ -24,12 +23,14 @@ import { Tooltip } from 'primereact/tooltip'
 import { Dialog } from 'primereact'
 import { useLocation } from 'react-router-dom'
 import { Toast } from 'primereact/toast'
+import Lottie from 'react-lottie'
+import { Button } from 'primereact/button'
 
 /**
  * Local import
  */
+import CustomButton from '@/components/Button'
 import binoculars from '@/assets/animations/binoculars.json'
-import Lottie from 'react-lottie'
 
 /* const dataDiscord2 = {
   success: true,
@@ -144,8 +145,9 @@ const Whitelist = () => {
   const [commentsVisible, setCommentsVisible] = useState(false)
   const { rights, socialclubName } = useSelector((state: any) => state.user)
   const { data: dataDiscord, isLoading: dataDiscordIsLoading, refetch: dataDiscordRefetch } = useGetDiscordDataQuery('')
-  const [triggerStartSession] = useLazyStartSessionQuery()
-  const [triggerStopSession] = useLazyStopSessionsQuery()
+  const { data: statusData, refetch: statusDataRefetch } = useGetStatusQuery('')
+  const [triggerStartSession, resultStartSession] = useLazyStartSessionQuery()
+  const [triggerStopSession, resultStopSession] = useLazyStopSessionsQuery()
   const [triggerSyncAllMembers] = useLazySyncAllMembersQuery()
   const [setWhitelist, resultSetWhitelist] = useSetWhitelistMutation()
   const location = useLocation()
@@ -157,6 +159,17 @@ const Whitelist = () => {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  const handleSyncDiscord = useCallback(() => {
+    dataDiscordRefetch()
+    statusDataRefetch()
+  }, [dataDiscordRefetch, statusDataRefetch])
+
+  useEffect(() => {
+    if (resultStartSession.isSuccess || resultStopSession.isSuccess) {
+      handleSyncDiscord()
+    }
+  }, [handleSyncDiscord, resultStartSession, resultStopSession])
 
   useEffect(() => {
     if (resultSetWhitelist.isSuccess && resultSetWhitelist.data) {
@@ -203,10 +216,6 @@ const Whitelist = () => {
     }, 100)
   }, [selectedMemberData?.allComments?.length])
 
-  const handleSyncDiscord = () => {
-    dataDiscordRefetch()
-  }
-
   const handleSyncAllMembers = () => {
     triggerSyncAllMembers('')
   }
@@ -243,8 +252,10 @@ const Whitelist = () => {
   const actionBodyTemplate = (rowData: any) => {
     return (
       <>
-        <Button
-          icon='pi pi-list' className='p-button-lg p-button-rounded p-button-success p-button-text' onClick={() => {
+        <CustomButton
+          aloneContent
+          style={{ width: 'fit-content', margin: '0' }}
+          onClick={() => {
             setCommentsVisible(true)
             // scroll dialogRef on bottom
             setTimeout(() => {
@@ -253,7 +264,9 @@ const Whitelist = () => {
             }, 100)
             setSelectedMember(rowData.id)
           }}
-        />
+        >
+          <i style={{ fontSize: '1rem' }} className='pi pi-comments' />
+        </CustomButton>
       </>
     )
   }
@@ -293,21 +306,26 @@ const Whitelist = () => {
   return (
     <Container>
       <Toast ref={toastRef} />
-      <h1>Gestion des whitelist</h1>
+      <ActionsHeader>
+        <h1>Gestion des whitelist</h1>
+        {/* Refresh button */}
+        <CustomButton onClick={handleSyncDiscord} style={{ width: 'fit-content' }} aloneContent>
+          <i className='pi pi-sync' />
+        </CustomButton>
+      </ActionsHeader>
       <Actions>
-        <StatCard title='Rôles des membres' buttonText='Synchroniser' buttonOnClick={handleSyncAllMembers} buttonIcon='pi pi-sync' iconBg='linear-gradient(195deg,rgb(215 122 122),rgb(211 15 15))' icon='pi pi-times-circle' />
-        {rights?.discordaccess && (
-          <>
-            <StatCard title='Sessions whitelist' buttonText='Démarrer une session' buttonOnClick={handleStartSession} buttonIcon='pi pi-play' icon='pi pi-shield' />
-            <StatCard title='Sessions whitelist' buttonText='Arrêter les sessions' buttonOnClick={handleStopSessions} buttonIcon='pi pi-stop' icon='pi pi-shield' />
-          </>
-        )}
+        <StatCard title='Rôles des membres' buttonText='Synchroniser' buttonOnClick={handleSyncAllMembers} buttonIcon='pi pi-sync' iconBg='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' icon='pi pi-times-circle' />
+        {rights?.discordaccess && statusData?.success
+          ? (
+            <StatCard title='Sessions whitelist' value='Lancée' buttonText='Arrêter les sessions' buttonOnClick={handleStopSessions} buttonIcon='pi pi-stop' icon='pi pi-shield' iconBg='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' />
+            )
+          : (
+            <StatCard title='Sessions whitelist' value='Arrêtée' buttonText='Démarrer une session' buttonOnClick={handleStartSession} buttonIcon='pi pi-play' icon='pi pi-shield' />
+            )}
       </Actions>
       <MembersList>
         <MembersListHeader>
           <h2>{dataDiscord?.name || 'Vous n\'êtes connecté dans aucun salon.'}</h2>
-          {/* Refresh button */}
-          <Button icon='pi pi-sync' className='p-button-sm' onClick={handleSyncDiscord} style={{ backgroundColor: '#FFC115', border: 'none' }} />
         </MembersListHeader>
         {members
           ? (
@@ -379,7 +397,11 @@ const Whitelist = () => {
             : (
               <h5>En attente d'une note</h5>
               )}
-          <CustomButton label='Valider' style={{ marginTop: '1rem' }} onClick={handleSetWhitelist} />
+          <CustomButton style={{ marginTop: '1rem', width: 'fit-content' }} onClick={handleSetWhitelist}>
+            <>
+              Valider
+            </>
+          </CustomButton>
         </PanelContent>
       </Dialog>
     </Container>
@@ -413,6 +435,18 @@ const Actions = styled.div`
   justify-content: flex-start;
   width: 100%;
   // max-width: 864px;
+`
+
+const ActionsHeader = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin-right: 1rem;
+  }
 `
 
 const MembersList = styled.div`
@@ -552,17 +586,6 @@ const CommentCardFooter = styled.div`
   .comment-card-info {
     margin-right: .5rem;
     color: rgb(107, 114, 128);
-  }
-`
-
-const CustomButton = styled(Button)`
-  margin-top: 1rem;
-  background: linear-gradient(195deg,rgb(255 189 103),rgb(205 137 3));
-
-  border: none;
-
-  &:hover {
-    background: linear-gradient(195deg,rgb(255 189 103),rgb(205 137 3)) !important;
   }
 `
 
