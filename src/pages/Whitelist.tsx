@@ -18,19 +18,18 @@ import { InputText } from 'primereact/inputtext'
 import { Member } from '@/services/community'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { Rating, RatingChangeTargetOptions } from 'primereact/rating'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Tooltip } from 'primereact/tooltip'
 import { Dialog } from 'primereact'
 import { useLocation } from 'react-router-dom'
-import { Toast } from 'primereact/toast'
 import Lottie from 'react-lottie'
-import { Button } from 'primereact/button'
 
 /**
  * Local import
  */
 import CustomButton from '@/components/Button'
 import binoculars from '@/assets/animations/binoculars.json'
+import { showToast } from '@/features/utilsSlice'
 
 /* const dataDiscord2 = {
   success: true,
@@ -137,6 +136,8 @@ import binoculars from '@/assets/animations/binoculars.json'
  * Component
  */
 const Whitelist = () => {
+  const dispatch = useDispatch()
+
   const [place, setPlace] = useState('5')
   const [isMounted, setIsMounted] = useState(false)
   const [selectedMember, setSelectedMember] = useState<number | null>(null)
@@ -154,7 +155,6 @@ const Whitelist = () => {
 
   const dialogRef = useRef<any>(null)
   const startRef = useRef(null)
-  const toastRef = useRef<any>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -177,13 +177,11 @@ const Whitelist = () => {
       setSelectedMemberRating(null)
       setSelectedMemberComment('')
 
-      // @ts-ignore
-      toastRef.current.show({ severity: 'success', summary: 'Commentaire ajouté', detail: 'Le commentaire a bien été ajouté', life: 3000 })
+      dispatch(showToast({ severity: 'success', summary: 'Commentaire ajouté', detail: 'Le commentaire a bien été ajouté', life: 3000 }))
     } else if (resultSetWhitelist.isSuccess) {
-      // @ts-ignore
-      toastRef.current.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue', life: 3000 })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue', life: 3000 }))
     }
-  }, [dataDiscordRefetch, resultSetWhitelist])
+  }, [dataDiscordRefetch, dispatch, resultSetWhitelist])
 
   useEffect(() => {
     if (isMounted) {
@@ -280,7 +278,7 @@ const Whitelist = () => {
               <span className='p-text-bold'>De: {rowData.lastComment?.author}</span>
             </div>
             <div className='p-d-flex p-flex-row p-jc-between'>
-              <span>Le: {new Date(rowData.lastComment?.created_at).toLocaleString()}</span>
+              <span>Le: {new Date(rowData.lastComment?.createdAt).toLocaleString()}</span>
             </div>
             <div className='p-d-flex p-flex-row p-jc-between'>
               <Rating value={rowData.lastComment?.notation} readOnly cancel={false} onIconProps={onIconProps(rowData.lastComment?.notation)} />
@@ -305,7 +303,6 @@ const Whitelist = () => {
 
   return (
     <Container>
-      <Toast ref={toastRef} />
       <ActionsHeader>
         <h1>Gestion des whitelist</h1>
         {/* Refresh button */}
@@ -349,7 +346,12 @@ const Whitelist = () => {
         <PanelContent>
           <h4>Nombre de place (5 par défaut)</h4>
           <CustomInput placeholder='5' type='number' onChange={(event) => setPlace(event.target.value)} value={place} />
-          <Button label='Start' disabled={!place.length} onClick={handleConfirmStart} />
+          <CustomButton style={{ marginTop: '1rem', width: 'fit-content' }} disabled={!place.length} onClick={handleConfirmStart}>
+            <>
+              <i className='pi pi-play' />
+              Démarrer
+            </>
+          </CustomButton>
         </PanelContent>
       </CustomOverlay>
 

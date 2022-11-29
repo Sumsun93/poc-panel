@@ -1,11 +1,9 @@
 /**
  * Package import
  */
-import { useRef } from 'react'
 import styled from 'styled-components'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
-import { Toast } from 'primereact/toast'
 import { useForm, Controller } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -16,6 +14,7 @@ import classNames from 'classnames'
  */
 import { useRegisterMutation } from '@/services/authentication'
 import { setIsRegistering } from '@/features/authSlice'
+import { showToast } from '@/features/utilsSlice'
 import HomeTemplate from '@/components/HomeTemplate'
 import Cgu from '@/components/Cgu'
 
@@ -44,8 +43,6 @@ const Register = () => {
   const navigate = useNavigate()
   const [register, { isLoading }] = useRegisterMutation()
 
-  const registerErrorToast = useRef(null)
-
   const defaultValues = {
     socialclub: '',
     email: '',
@@ -58,14 +55,12 @@ const Register = () => {
 
   const onSubmit = async (data: any) => {
     if (data.email !== data.confirmEmail) {
-      // @ts-ignore
-      registerErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Les emails ne correspondent pas' })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Les emails ne correspondent pas' }))
       return
     }
 
     if (data.password !== data.confirmPassword) {
-      // @ts-ignore
-      registerErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Les mots de passe ne correspondent pas' })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Les mots de passe ne correspondent pas' }))
       return
     }
 
@@ -77,14 +72,12 @@ const Register = () => {
 
     if (result.success) {
       dispatch(setIsRegistering(false))
-      // @ts-ignore
-      registerErrorToast.current?.show({ severity: 'success', summary: 'Succès', detail: 'Votre compte a bien été créé et un mail vous a été envoyé.' })
+      dispatch(showToast({ severity: 'success', summary: 'Succès', detail: 'Votre compte a bien été créé et un mail vous a été envoyé.' }))
 
       reset()
     } else if (result.messages.errors) {
       const allErrors = Object.keys(result.messages.errors).map((key) => result.messages.errors[key]).join('\n')
-      // @ts-ignore
-      registerErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: allErrors })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: allErrors }))
     }
   }
 
@@ -161,7 +154,6 @@ const Register = () => {
     <HomeTemplate>
       <>
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Toast ref={registerErrorToast} />
           {inputs.map((input, index) => renderInput(index, input))}
           <ButtonStyled loading={isLoading} type='submit'>S'inscrire</ButtonStyled>
         </Form>

@@ -1,14 +1,14 @@
 /**
  * Package import
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
-import { Toast } from 'primereact/toast'
 import { useForm, Controller } from 'react-hook-form'
 import classNames from 'classnames'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 
 /**
  * Local import
@@ -16,19 +16,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useChangePasswordMutation, useCheckResetMutation } from '@/services/authentication'
 import HomeTemplate from '@/components/HomeTemplate'
 import Loading from '@/components/Loading'
+import { showToast } from '@/features/utilsSlice'
 
 /**
  * Component
  */
 const ResetPassword = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [changePassword, { isLoading }] = useChangePasswordMutation()
   const [sendCheck, { isLoading: isLoadingCheck }] = useCheckResetMutation()
 
   const [isValid, setIsValid] = useState(false)
-
-  const resetToast = useRef(null)
 
   const { userId, token, check } = useMemo(() => ({
     userId: searchParams.get('userId'),
@@ -79,10 +79,9 @@ const ResetPassword = () => {
 
       setIsValid(result.success)
     } catch (error) {
-      // @ts-ignore
-      resetToast.current.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue.', life: 3000 })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue.', life: 3000 }))
     }
-  }, [sendCheck, userId, check, token])
+  }, [sendCheck, userId, check, token, dispatch])
 
   useEffect(() => {
     onCheck()
@@ -98,16 +97,14 @@ const ResetPassword = () => {
       }).unwrap()
 
       if (result.success) {
-        // @ts-ignore
-        resetToast.current.show({ severity: 'success', summary: 'Succès', detail: 'Votre mot de passe a bien été modifié.', life: 3000 })
+        dispatch(showToast({ severity: 'success', summary: 'Succès', detail: 'Votre mot de passe a bien été modifié.', life: 3000 }))
         reset()
+        navigate('/login')
       } else {
-        // @ts-ignore
-        resetToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 })
+        dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 }))
       }
     } catch (e) {
-      // @ts-ignore
-      resetToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 }))
     }
   }
 
@@ -149,7 +146,7 @@ const ResetPassword = () => {
     <HomeTemplate>
       <>
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Toast ref={resetToast} />
+          <h1>Réinitialisation du mot de passe</h1>
           {inputs.map((input) => (
             <span key={input.name} className='p-float-label' style={{ position: 'relative' }}>
               {renderInput(input)}
@@ -177,6 +174,12 @@ const Form = styled.form`
   align-items: center;
   padding: 20px;
   gap: 30px;
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #fff;
+  }
 `
 
 const Content = styled.div`

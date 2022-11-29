@@ -12,10 +12,28 @@ import { extractColor, rgbToRgba } from '@/utils/color'
 /**
  * Component
  */
-const Button = ({ children, onClick, gradient = 'linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))', style = {}, aloneContent = false }: { children: JSX.Element, onClick: Function, gradient?: string, style?: any, aloneContent?: boolean }) => {
+const Button = ({
+  children,
+  onClick,
+  gradient = 'linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71))',
+  style = {},
+  aloneContent = false,
+  disabled = false,
+  className = '',
+  tooltip,
+}: {
+  children: JSX.Element,
+  onClick: Function,
+  gradient?: string,
+  style?: any,
+  aloneContent?: boolean,
+  disabled?: boolean,
+  className?: string,
+  tooltip?: string,
+}) => {
   return (
     // @ts-ignore
-    <CustomButton onClick={onClick} bgColor={gradient} color={extractColor(gradient)} style={style} aloneContent={aloneContent}>
+    <CustomButton onClick={onClick} bgColor={gradient} color={extractColor(gradient)} style={style} aloneContent={aloneContent} disabled={disabled} className={className} tooltip={tooltip}>
       {children}
     </CustomButton>
   )

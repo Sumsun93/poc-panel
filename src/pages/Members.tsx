@@ -5,9 +5,10 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { InputText } from 'primereact/inputtext'
 import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup'
-import { Toast } from 'primereact/toast'
 import styled from 'styled-components'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 
 /**
  * Local import
@@ -17,11 +18,12 @@ import {
   useGetCommunityQuery,
   useGetLastMembersQuery,
   useLazyDeleteMemberQuery,
-  useLazyGetMemberQuery,
+  useLazyFindMemberQuery,
 } from '@/services/community'
 import StatCard from '@/components/StatCard'
 import Loading from '@/components/Loading'
 import Button from '@/components/Button'
+import { showToast } from '@/features/utilsSlice'
 
 /**
  * Component
@@ -32,11 +34,14 @@ const Members = () => {
     data: community, isLoading: communityLoading, refetch: refetchCommunity,
   } = useGetCommunityQuery('')
   const { data: lastMembers, isLoading: lastMembersLoading, refetch: refecthLastMembers } = useGetLastMembersQuery('')
-  const [triggerGetMember, resultGetMember] = useLazyGetMemberQuery()
+  const [triggerGetMember, resultGetMember] = useLazyFindMemberQuery()
   const [triggerDeleteMember, resultDeleteMember] = useLazyDeleteMemberQuery()
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
   const [searchMembersList, setSearchMembersList] = useState([])
   const [memberSearch, setMemberSearch] = useState('')
-  const toast = useRef(null)
 
   const formatMember = (comments: string[]) => (member: any, index: number) => ({
     id: member[0],
@@ -62,16 +67,14 @@ const Members = () => {
 
     if (!resultDeleteMember.isLoading) {
       if (resultDeleteMember.isSuccess && resultDeleteMember.data.success) {
-        // @ts-ignore
-        toast.current?.show({ severity: 'success', summary: 'Succès', detail: 'L\'utilisateur a bien été supprimé.' })
+        dispatch(showToast({ severity: 'success', summary: 'Succès', detail: 'L\'utilisateur a bien été supprimé.' }))
         refecthLastMembers()
         refetchCommunity()
       } else {
-        // @ts-ignore
-        toast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer cet utilisateur.' })
+        dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer cet utilisateur.' }))
       }
     }
-  }, [refecthLastMembers, refetchCommunity, resultDeleteMember])
+  }, [dispatch, refecthLastMembers, refetchCommunity, resultDeleteMember])
 
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -110,13 +113,20 @@ const Members = () => {
     confirm.show()
   }
 
+  const handleGoToMember = (memberData: Member) => () => {
+    navigate(`/user/${memberData.id}`)
+  }
+
   const actionBodyTemplate = (rowData: any) => {
     return (
-      <>
-        <Button gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' onClick={handleWantDelete(rowData)} aloneContent style={{ width: 'fit-content', margin: '0' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button onClick={handleGoToMember(rowData)} aloneContent style={{ width: 'fit-content', margin: '0 .2rem' }}>
+          <i style={{ fontSize: '1rem' }} className='pi pi-user' />
+        </Button>
+        <Button gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' onClick={handleWantDelete(rowData)} aloneContent style={{ width: 'fit-content', margin: '0 .2rem' }}>
           <i style={{ fontSize: '1rem' }} className='pi pi-trash' />
         </Button>
-      </>
+      </div>
     )
   }
 
@@ -152,7 +162,7 @@ const Members = () => {
               <DataTable size='small' style={{ borderRadius: '1rem', overflow: 'hidden', boxShadow: 'rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem' }} value={memberSearch.length ? searchMembersList : members} paginator rows={10} rowsPerPageOptions={[10, 20, 50]}>
                 <Column field='id' header='ID' />
                 <Column field='socialclub' header='Socialclub' />
-                <Column field='dateRegister' header="Date d'inscription" />
+                <Column field='dateRegister' header="Date d'inscription" body={(rowData) => new Date(rowData.dateRegister).toLocaleString()} />
                 <Column field='status' header='Status' />
                 <Column field='comment' header='Dernier commentaire' />
                 <Column body={actionBodyTemplate} />
@@ -161,8 +171,6 @@ const Members = () => {
           </>
           )}
       <ConfirmPopup />
-      <Toast ref={toast} />
-
     </Container>
   )
 }

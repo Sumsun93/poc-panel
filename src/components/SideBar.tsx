@@ -22,8 +22,8 @@ interface Category {
   title?: string;
   items: {
     route: string;
-    label: string;
-    icon: string;
+    label?: string;
+    icon?: string;
     right?: string
   }[]
 }
@@ -72,7 +72,7 @@ const SideBar = () => {
       </User>
       <Divider />
 
-      {pages.map((category, index) => (
+      {pages.filter((category) => !category.hide).map((category, index) => (
         <Fragment key={index}>
           {renderCategories(category)}
         </Fragment>

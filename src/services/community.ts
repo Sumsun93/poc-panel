@@ -29,11 +29,17 @@ export const communityApi = createApi({
     getLastMembers: builder.query({
       query: () => '/community/last',
     }),
-    getMember: builder.query({
+    findMember: builder.query({
       query: (id: string) => `/community/find/${id}`,
     }),
     deleteMember: builder.query({
       query: (id: number) => `/community/delete/${id}`,
+    }),
+    getMemberById: builder.query({
+      query: (id: number) => `/community/${id}`,
+    }),
+    getMemberCharactersById: builder.query({
+      query: (id: number) => `/community/${id}/characters`,
     }),
   }),
 })
@@ -55,4 +61,11 @@ export interface Member {
   discordName?: string
 }
 
-export const { useGetCommunityQuery, useGetLastMembersQuery, useLazyGetMemberQuery, useLazyDeleteMemberQuery } = communityApi
+export const {
+  useGetCommunityQuery,
+  useGetLastMembersQuery,
+  useLazyFindMemberQuery,
+  useLazyDeleteMemberQuery,
+  useGetMemberByIdQuery,
+  useGetMemberCharactersByIdQuery,
+} = communityApi

@@ -1,29 +1,28 @@
 /**
  * Package import
  */
-import { useRef } from 'react'
 import styled from 'styled-components'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
-import { Toast } from 'primereact/toast'
 import { useForm, Controller } from 'react-hook-form'
 import classNames from 'classnames'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 
 /**
  * Local import
  */
 import { useResetPasswordMutation } from '@/services/authentication'
 import HomeTemplate from '@/components/HomeTemplate'
+import { showToast } from '@/features/utilsSlice'
 
 /**
  * Component
  */
 const WantResetPassword = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate()
   const [reset, { isLoading }] = useResetPasswordMutation()
-
-  const resetToast = useRef(null)
 
   interface FormValues {
     socialclub: string;
@@ -69,27 +68,20 @@ const WantResetPassword = () => {
       }).unwrap()
 
       if (result.success) {
-        // @ts-ignore
-        resetToast.current?.show({
+        dispatch(showToast({
           severity: 'success',
           summary: 'Demande envoyée',
           detail: 'Un email vous a été envoyé',
           life: 3000,
-        })
+        }))
 
         resetForm()
-
-        setTimeout(() => {
-          navigate('/login')
-        }
-        , 3000)
+        navigate('/login')
       } else {
-        // @ts-ignore
-        resetToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 })
+        dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 }))
       }
     } catch (e) {
-      // @ts-ignore
-      resetToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, réessayez dans quelques minutes.', life: 3000 }))
     }
   }
 
@@ -109,7 +101,7 @@ const WantResetPassword = () => {
     <HomeTemplate>
       <>
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Toast ref={resetToast} />
+          <h1 className='p-text-center'>Mot de passe oublié</h1>
           {inputs.map((input) => (
             <span key={input.name} className='p-float-label' style={{ position: 'relative' }}>
               {renderInput(input)}
@@ -137,6 +129,12 @@ const Form = styled.form`
   align-items: center;
   padding: 20px;
   gap: 30px;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #fff;
+  }
 `
 
 const ButtonStyled = styled(Button)`

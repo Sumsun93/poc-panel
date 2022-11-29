@@ -1,12 +1,11 @@
 /**
  * Package import
  */
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import styled from 'styled-components'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { Checkbox } from 'primereact/checkbox'
-import { Toast } from 'primereact/toast'
 import { useForm, Controller } from 'react-hook-form'
 import classNames from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -16,6 +15,7 @@ import { useDispatch } from 'react-redux'
  */
 import { useLoginMutation } from '@/services/authentication'
 import { setConnected, setToken } from '@/features/authSlice'
+import { showToast } from '@/features/utilsSlice'
 import HomeTemplate from '@/components/HomeTemplate'
 import Cgu from '@/components/Cgu'
 import { useNavigate } from 'react-router-dom'
@@ -30,8 +30,6 @@ const Login = () => {
   const [login, { isLoading }] = useLoginMutation()
 
   const [rememberMe, setRememberMe] = useState(false)
-
-  const loginErrorToast = useRef(null)
 
   const defaultValues = {
     socialclub: '',
@@ -57,16 +55,14 @@ const Login = () => {
           sessionStorage.setItem('token', result.token)
         }
       } else {
-        // @ts-ignore
-        loginErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Le socialclub ou le mot de passe est incorrect' })
+        dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Le socialclub ou le mot de passe est incorrect' }))
       }
     } catch (e: any) {
       let message = 'Le socialclub ou le mot de passe est incorrect'
       if (e.data?.messages?.errors && Object.keys(e.data?.messages?.errors).length) {
         message = Object.keys(e.data?.messages?.errors).map((key) => e.data?.messages?.errors[key]).join(' ')
       }
-      // @ts-ignore
-      loginErrorToast.current?.show({ severity: 'error', summary: 'Erreur', detail: message })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: message }))
     }
   }
 
@@ -90,7 +86,6 @@ const Login = () => {
     <HomeTemplate>
       <>
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Toast ref={loginErrorToast} />
           <span className='p-float-label' style={{ position: 'relative' }}>
             {renderInput('socialclub', 'socialclub')}
             <label htmlFor='socialclub'>Socialclub</label>

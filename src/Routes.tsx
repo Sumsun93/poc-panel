@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 /**
  * Local import
  */
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { disconnect, setConnected, setToken } from '@/features/authSlice'
 import SideBar from '@/components/SideBar'
 import styled from 'styled-components'
@@ -20,6 +20,8 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import WantResetPassword from '@/pages/WantResetPassword'
 import ResetPassword from '@/pages/ResetPassword'
+import { Toast } from 'primereact/toast'
+import { showToast } from '@/features/utilsSlice'
 
 /**
  * Component
@@ -28,8 +30,11 @@ const Routes = () => {
   const dispatch = useDispatch()
   const { connected } = useSelector((state: any) => state.auth)
   const { rights } = useSelector((state: any) => state.user)
+  const { toastValue } = useSelector((state: any) => state.utils)
   const { data: profilResult, error, isLoading: profilLoading } = useGetProfilQuery('', { skip: !connected })
   const { data: rightsResult, isLoading: rightsLoading } = useGetRightsQuery('', { skip: !connected })
+
+  const toastRef = useRef(null)
 
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
@@ -40,8 +45,16 @@ const Routes = () => {
   }, [dispatch])
 
   useEffect(() => {
+    if (toastValue) {
+      // @ts-ignore
+      toastRef.current?.show(toastValue)
+      dispatch(showToast(null))
+    }
+  }, [dispatch, toastValue])
+
+  useEffect(() => {
     if (profilResult) {
-      if (profilResult.error) {
+      if (profilResult.error || (profilResult.success === false)) {
         dispatch(disconnect())
       } else {
         dispatch(setUser(profilResult))
@@ -74,6 +87,7 @@ const Routes = () => {
     <Container>
       {connected && <SideBar />}
       <Content>
+        <Toast ref={toastRef} position='top-center' />
         <ReactRoutes>
           {connected
             ? (

@@ -1,6 +1,7 @@
 import Dashboard from '@/pages/Dashboard'
 import Members from '@/pages/Members'
 import Whitelist from '@/pages/Whitelist'
+import User from '@/pages/User'
 
 const pages = [
   {
@@ -36,6 +37,17 @@ const pages = [
         icon: 'pi pi-fw pi-map',
         right: 'globalmap',
         Component: Dashboard,
+      },
+    ],
+  },
+  {
+    hide: true,
+    items: [
+      {
+        route: '/user/:userId',
+        label: 'Fiche utilisateur',
+        right: 'memberlist',
+        Component: User,
       },
     ],
   },

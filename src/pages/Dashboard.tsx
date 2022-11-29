@@ -1,7 +1,7 @@
 /**
  * Package import
  */
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,7 +15,8 @@ import working from '@/assets/animations/working.json'
 import { useLazyAskWhitelistQuery, useLazyGetProfilQuery, useLazyRemoveWhitelistQuery } from '@/services/profil'
 import { disconnect } from '@/features/authSlice'
 import { setUser } from '@/features/userSlice'
-import { Toast } from 'primereact/toast'
+import { showToast } from '@/features/utilsSlice'
+// import { useGetServerStatusQuery } from '@/services/live'
 // import Loading from '@/components/Loading'
 // import CharacterCard from '@/components/CharacterCard'
 
@@ -27,10 +28,9 @@ const Dashboard = () => {
   // const { data: characters, isLoading: charactersLoading } = useGetCharactersQuery('')
   const [askWhitelist, askWhitelistResult] = useLazyAskWhitelistQuery()
   const [removeWhitelist, removeWhitelistResult] = useLazyRemoveWhitelistQuery()
+  // const { data: serverStatus } = useGetServerStatusQuery('')
   const [getProfil, profilResult] = useLazyGetProfilQuery()
   const { insertionTime, whitelistStatut, whitelistNumber } = useSelector((state: any) => state.user)
-
-  const askToast = useRef(null)
 
   const defaultOptions = {
     loop: true,
@@ -49,24 +49,20 @@ const Dashboard = () => {
   useEffect(() => {
     if (askWhitelistResult.isSuccess && askWhitelistResult.data.success) {
       getProfil('')
-      // @ts-ignore
-      askToast.current.show({ severity: 'success', summary: 'Demande envoyée', detail: 'Votre demande a bien été envoyée.', life: 3000 })
+      dispatch(showToast({ severity: 'success', summary: 'Demande envoyée', detail: 'Votre demande a bien été envoyée.', life: 3000 }))
     } else if (askWhitelistResult.isSuccess) {
-      // @ts-ignore
-      askToast.current.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, merci de contacter un membre de l\'équipe.', life: 3000 })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, merci de contacter un membre de l\'équipe.', life: 3000 }))
     }
-  }, [askWhitelistResult, getProfil])
+  }, [askWhitelistResult, dispatch, getProfil])
 
   useEffect(() => {
     if (removeWhitelistResult.isSuccess && removeWhitelistResult.data.success) {
       getProfil('')
-      // @ts-ignore
-      askToast.current.show({ severity: 'success', summary: 'Demande annulée', detail: 'Votre demande a bien été annulée.', life: 3000 })
+      dispatch(showToast({ severity: 'success', summary: 'Demande annulée', detail: 'Votre demande a bien été annulée.', life: 3000 }))
     } else if (removeWhitelistResult.isSuccess) {
-      // @ts-ignore
-      askToast.current.show({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, merci de contacter un membre de l\'équipe.', life: 3000 })
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue, merci de contacter un membre de l\'équipe.', life: 3000 }))
     }
-  }, [getProfil, removeWhitelistResult])
+  }, [dispatch, getProfil, removeWhitelistResult])
 
   useEffect(() => {
     if (profilResult.isSuccess) {
@@ -102,10 +98,21 @@ const Dashboard = () => {
 
   return (
     <Container>
-      <Toast ref={askToast} />
       <h1>Votre tableau de bord</h1>
       <StatsContainer>
-        <StatCard title='Communauté' value='Membre' desc={`Inscrit depuis le ${insertionTime}`} icon='pi pi-user' />
+        <StatCard
+          title='État du serveur'
+          value='Éteint'
+          icon='pi pi-fw pi-server'
+          iconBg='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))'
+          desc='En cours développement'
+        />
+        <StatCard
+          title='Communauté'
+          value='Membre'
+          desc={`Depuis le ${new Date(insertionTime).toLocaleString()} (${Math.floor((Date.now() - insertionTime) / 86400000)} jours)`}
+          icon='pi pi-user'
+        />
         <StatCard value={whitelistStatut} title='Whitelist' icon='pi pi-users' iconBg={buttonWhitelist?.iconBg} buttonText={buttonWhitelist?.label} buttonIcon={buttonWhitelist?.icon} buttonOnClick={buttonWhitelist?.callback} />
       </StatsContainer>
       <Content>
