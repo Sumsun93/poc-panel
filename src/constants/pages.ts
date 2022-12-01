@@ -2,6 +2,7 @@ import Dashboard from '@/pages/Dashboard'
 import Members from '@/pages/Members'
 import Whitelist from '@/pages/Whitelist'
 import User from '@/pages/User'
+import Map from '@/pages/Map'
 
 const pages = [
   {
@@ -36,7 +37,7 @@ const pages = [
         label: 'Carte',
         icon: 'pi pi-fw pi-map',
         right: 'globalmap',
-        Component: Dashboard,
+        Component: Map,
       },
     ],
   },

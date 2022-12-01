@@ -120,7 +120,7 @@ const User = () => {
       <h2>Personnages</h2>
       {charactersLoading && <Loading />}
       <CharactersList>
-        {(!charactersLoading && characters?.list) && <Carousel value={[...characters.list, ...characters.list, ...characters.list, ...characters.list, ...characters.list, ...characters.list, ...characters.list, ...characters.list, ...characters.list]} numVisible={3} numScroll={1} itemTemplate={characterTemplate} />}
+        {(!charactersLoading && characters?.list) && <Carousel value={characters.list} numVisible={3} numScroll={1} itemTemplate={characterTemplate} />}
       </CharactersList>
       <ConfirmPopup />
     </Container>

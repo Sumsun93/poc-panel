@@ -1,17 +1,23 @@
 /**
  * Package import
  */
+import L from 'leaflet'
+import Lottie from 'react-lottie'
 import styled from 'styled-components'
 import { Character } from '@/types/user'
 import Button from '@/components/Button'
 import { AiOutlineNotification } from 'react-icons/ai'
 import { CiMedicalCross } from 'react-icons/ci'
-import { GiHandcuffs, GiHighKick } from 'react-icons/gi'
+import { GiHandcuffs, GiHighKick, GiWaterDrop } from 'react-icons/gi'
 import { TbHammer } from 'react-icons/tb'
+import { FaHeartbeat } from 'react-icons/fa'
+import { IoRestaurant } from 'react-icons/io5'
+import noSignal from '@/assets/animations/nosignal.json'
 
 /**
  * Local import
  */
+import LeaftletMap from '@/components/LeaftletMap'
 
 /**
  * Component
@@ -20,17 +26,23 @@ const CharacterCard = ({ character }: { character: Character }) => {
   const {
     id,
     teamspeak,
-    online,
+    // online,
     firstname,
     lastname,
     position,
-    rotation,
+    // rotation,
     hunger,
     thirst,
     health,
     dimension,
     // inventory_id,
   } = character
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: noSignal,
+  }
 
   return (
     <Container>
@@ -39,75 +51,53 @@ const CharacterCard = ({ character }: { character: Character }) => {
         {firstname}
         {' '}
         {lastname}
+        {' '}
+        ({id})
       </Name>
       <Infos>
-        <Info>
-          ID:
-          {' '}
-          <span>
-            {id}
-          </span>
-        </Info>
-        <Info>
-          Teamspeak:
-          {' '}
-          <span>
-            {teamspeak}
-          </span>
-        </Info>
-        <Info>
-          Position:
-          {' '}
-          <span>
-            {position.x}
-            ,
+        {teamspeak && (
+          <Info>
+            Teamspeak:
             {' '}
-            {position.y}
-            ,
-            {' '}
-            {position.z}
+            <span>
+              {teamspeak}
+            </span>
+          </Info>
+        )}
+        <MapContainer>
+          <LeaftletMap
+            layer='satellite'
+            markers={[{
+              key: id.toString(),
+              position: new L.LatLng(position.x, position.y),
+            }]}
+            positionValue={{ lat: position.x, lng: position.y }}
+            zoomValue={4}
+          />
+          {dimension !== 0 && (
+            <NoSignal>
+              <Lottie
+                options={defaultOptions}
+              />
+            </NoSignal>
+          )}
+        </MapContainer>
+        <Info>
+          <FaHeartbeat />
+          <span>
+            {health / 200 * 100}%
           </span>
         </Info>
         <Info>
-          Rotation:
-          {' '}
+          <IoRestaurant />
           <span>
-            {rotation}
+            {hunger}%
           </span>
         </Info>
         <Info>
-          Dimension:
-          {' '}
+          <GiWaterDrop />
           <span>
-            {dimension}
-          </span>
-        </Info>
-        <Info>
-          Hunger:
-          {' '}
-          <span>
-            {hunger}
-          </span>
-        </Info>
-        <Info>
-          Thirst:
-          {' '}
-          <span>
-            {thirst}
-          </span>
-        </Info>
-        <Info>
-          Health:
-          {' '}
-          <span>
-            {health}
-          </span>
-        </Info>
-        <Info>
-          Online:
-          {' '}
-          <span>
-            {online ? 'Oui' : 'Non'}
+            {thirst}%
           </span>
         </Info>
       </Infos>
@@ -136,7 +126,7 @@ const Container = styled.div`
   position: relative;
   background-color: #fff;
   border-radius: .75rem;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem;
   padding: calc(128px - 32px + 1rem) 1rem 1rem 1rem;
   margin: 32px 10px 0 10px;
   display: flex;
@@ -153,6 +143,7 @@ const Snapshot = styled.div`
   background-color: grey;
   width: 128px;
   height: 128px;
+  box-shadow: rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem;
 `
 
 const Name = styled.h2`
@@ -162,16 +153,42 @@ const Name = styled.h2`
 const Infos = styled.div`
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
 `
 
+const MapContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 333px;
+  margin: 1rem 0;
+  border-radius: .75rem;
+  overflow: hidden;
+  box-shadow: rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem;
+`
+
+const NoSignal = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0, 0, 0);
+  opacity: 0.5;
+  z-index: 1000;
+  pointer-events: none;
+`
+
 const Info = styled.p`
-  margin: .2rem 0;
+  font-size: 1.25rem;
+  margin: .2rem .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   span {
-    font-weight: bold;
+    margin-left: .2rem;
   }
 `
 
