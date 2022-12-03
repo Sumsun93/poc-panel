@@ -11,16 +11,13 @@ import {
   useLazyStartSessionQuery,
   useLazyStopSessionsQuery,
   useLazySyncAllMembersQuery,
-  useSetWhitelistMutation,
 } from '@/services/whitelist'
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { Member } from '@/services/community'
-import { InputTextarea } from 'primereact/inputtextarea'
-import { Rating, RatingChangeTargetOptions } from 'primereact/rating'
-import { useDispatch, useSelector } from 'react-redux'
+import { Rating } from 'primereact/rating'
+import { useSelector } from 'react-redux'
 import { Tooltip } from 'primereact/tooltip'
-import { Dialog } from 'primereact'
 import { useLocation } from 'react-router-dom'
 import Lottie from 'react-lottie'
 
@@ -29,7 +26,7 @@ import Lottie from 'react-lottie'
  */
 import CustomButton from '@/components/Button'
 import binoculars from '@/assets/animations/binoculars.json'
-import { showToast } from '@/features/utilsSlice'
+import WhitelistComment from '@/components/WhitelistComment'
 
 /* const dataDiscord2 = {
   success: true,
@@ -136,21 +133,16 @@ import { showToast } from '@/features/utilsSlice'
  * Component
  */
 const Whitelist = () => {
-  const dispatch = useDispatch()
-
   const [place, setPlace] = useState('5')
   const [isMounted, setIsMounted] = useState(false)
   const [selectedMember, setSelectedMember] = useState<number | null>(null)
-  const [selectedMemberRating, setSelectedMemberRating] = useState<RatingChangeTargetOptions | null | undefined>(null)
-  const [selectedMemberComment, setSelectedMemberComment] = useState<string>('')
   const [commentsVisible, setCommentsVisible] = useState(false)
-  const { rights, socialclubName } = useSelector((state: any) => state.user)
+  const { rights } = useSelector((state: any) => state.user)
   const { data: dataDiscord, isLoading: dataDiscordIsLoading, refetch: dataDiscordRefetch } = useGetDiscordDataQuery('')
   const { data: statusData, refetch: statusDataRefetch } = useGetStatusQuery('')
   const [triggerStartSession, resultStartSession] = useLazyStartSessionQuery()
   const [triggerStopSession, resultStopSession] = useLazyStopSessionsQuery()
   const [triggerSyncAllMembers] = useLazySyncAllMembersQuery()
-  const [setWhitelist, resultSetWhitelist] = useSetWhitelistMutation()
   const location = useLocation()
 
   const dialogRef = useRef<any>(null)
@@ -170,18 +162,6 @@ const Whitelist = () => {
       handleSyncDiscord()
     }
   }, [handleSyncDiscord, resultStartSession, resultStopSession])
-
-  useEffect(() => {
-    if (resultSetWhitelist.isSuccess && resultSetWhitelist.data) {
-      dataDiscordRefetch()
-      setSelectedMemberRating(null)
-      setSelectedMemberComment('')
-
-      dispatch(showToast({ severity: 'success', summary: 'Commentaire ajouté', detail: 'Le commentaire a bien été ajouté', life: 3000 }))
-    } else if (resultSetWhitelist.isSuccess) {
-      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue', life: 3000 }))
-    }
-  }, [dataDiscordRefetch, dispatch, resultSetWhitelist])
 
   useEffect(() => {
     if (isMounted) {
@@ -231,18 +211,6 @@ const Whitelist = () => {
 
   const handleStopSessions = () => {
     triggerStopSession('')
-  }
-
-  const handleSetWhitelist = () => {
-    if (selectedMemberData) {
-      setWhitelist({
-        id: selectedMemberData.id,
-        body: {
-          notation: selectedMemberRating?.value || 0,
-          comment: selectedMemberComment,
-        },
-      })
-    }
   }
 
   const onIconProps = (rating: number) => ({ style: { color: rating > 2 ? 'rgb(67,160,71)' : 'rgb(211 15 15)' } })
@@ -355,57 +323,17 @@ const Whitelist = () => {
         </PanelContent>
       </CustomOverlay>
 
-      <Dialog header={`Évaluations de ${selectedMemberData?.discordName}`} visible={commentsVisible} onHide={() => setCommentsVisible(false)} dismissableMask resizable blockScroll={false} style={{ minWidth: '480px', width: '480px', height: '705px', minHeight: '705px' }}>
-        <AllComments ref={dialogRef}>
-          {selectedMemberData?.allComments?.map((comment, index) => (
-            <CommentCard key={index}>
-              {comment.author === socialclubName && (
-                <>
-                  <Tooltip target='.mine-icon' content={'Tu es l\'auteur de cette évaluation'} />
-                  <IsMeIcon className='mine-icon'>
-                    <i className='pi pi-eye' />
-                  </IsMeIcon>
-                </>
-              )}
-              <CommentCardContent>
-                {comment.comment}
-              </CommentCardContent>
-              <CommentCardFooter>
-                <Rating value={comment.notation} readOnly cancel={false} onIconProps={onIconProps(comment.notation)} />
-                <span className='comment-card-info'>De: {comment.author}</span>
-                <span className='comment-card-info'>Le: {new Date(comment.createdAt).toLocaleString()}</span>
-              </CommentCardFooter>
-            </CommentCard>
-          )) || (
-            <CommentCard>
-              <CommentCardContent>
-                Aucune évaluation, sois le premier à en faire une !
-              </CommentCardContent>
-            </CommentCard>
-          )}
-        </AllComments>
-        <PanelContent>
-          <h4>Soumettre une Évaluation</h4>
-          <InputTextarea rows={5} cols={30} autoResize style={{ marginBottom: '1rem', width: '100%' }} value={selectedMemberComment} onChange={(event) => setSelectedMemberComment(event.target.value)} />
-          <Rating value={selectedMemberRating?.value || 0} onChange={(event) => setSelectedMemberRating(event.target)} cancel={false} onIconProps={onIconProps(selectedMemberRating?.value || 0)} />
-          {selectedMemberRating?.value
-            ? (
-              <h5 style={{ color: selectedMemberRating?.value > 2 ? 'rgb(67,160,71)' : 'rgb(211 15 15)' }}>
-                Le joueur
-                {selectedMemberRating?.value > 2 ? ' sera ' : ' ne sera pas '}
-                whitelist
-              </h5>
-              )
-            : (
-              <h5>En attente d'une note</h5>
-              )}
-          <CustomButton style={{ marginTop: '1rem', width: 'fit-content' }} onClick={handleSetWhitelist}>
-            <>
-              Valider
-            </>
-          </CustomButton>
-        </PanelContent>
-      </Dialog>
+      {selectedMemberData && (
+        <WhitelistComment
+          id={selectedMemberData.id}
+          titleName={selectedMemberData.discordName || ''}
+          isVisible={commentsVisible}
+          onHide={() => setCommentsVisible(false)}
+          ref={dialogRef}
+          allComments={selectedMemberData.allComments}
+          onSend={handleSyncDiscord}
+        />
+      )}
     </Container>
   )
 }
@@ -513,82 +441,6 @@ const PanelContent = styled.div`
 
 const CustomInput = styled(InputText)`
   margin-bottom: 1rem;
-`
-
-const AllComments = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: 100%;
-  height: calc(100% - 20rem);
-  overflow-y: auto;
-`
-
-const CommentCard = styled.div`
-  position: relative;
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-
-  .p-rating {
-    width: 100%;
-    margin: .2rem 0;
-  }
-
-  .p-rating .p-rating-item .p-rating-icon {
-    font-size: 1rem;
-    color: rgb(67,160,71);
-  }
-`
-
-const CommentCardContent = styled.div`
-  padding: 1rem;
-  background-color: rgb(240, 242, 245);
-  border-radius: 0.5rem;
-  width: fit-content;
-  max-width: 100%;
-  max-height: 8rem;
-  overflow-y: auto;
-  box-shadow: rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem;
-
-  // custom scrollbar
-  &::-webkit-scrollbar {
-    width: 0.5rem;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgb(107, 114, 128);
-    border-radius: 0.5rem;
-  }
-`
-
-const IsMeIcon = styled.div`
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  color: rgb(255,193,21);
-
-`
-
-const CommentCardFooter = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 0.75rem;
-
-  .comment-card-info {
-    margin-right: .5rem;
-    color: rgb(107, 114, 128);
-  }
 `
 
 export default Whitelist

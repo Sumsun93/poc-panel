@@ -2,7 +2,7 @@
  * Package import
  */
 import { useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup'
 
@@ -19,8 +19,11 @@ import StatCard from '@/components/StatCard'
 import CharacterCard from '@/components/CharacterCard'
 import { Character } from '@/types/user'
 import { showToast } from '@/features/utilsSlice'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Carousel } from 'primereact'
+import CustomButton from '@/components/Button'
+import WhitelistComment from '@/components/WhitelistComment'
+import UserLogs from '@/components/UserLogs'
 
 /**
  * Component
@@ -29,9 +32,25 @@ const User = () => {
   const params = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { data, isLoading } = useGetMemberByIdQuery(parseInt(params.userId as string, 0))
-  const { data: characters, isLoading: charactersLoading } = useGetMemberCharactersByIdQuery(parseInt(params.userId as string, 0))
+
+  const { rights } = useSelector((state: any) => state.user)
+
+  const { data, isLoading, refetch: refetchMember } = useGetMemberByIdQuery(parseInt(params.userId as string, 0))
+  const { data: characters, isLoading: charactersLoading, refetch } = useGetMemberCharactersByIdQuery(parseInt(params.userId as string, 0))
   const [triggerDeleteMember, resultDeleteMember] = useLazyDeleteMemberQuery()
+
+  const [commentsVisible, setCommentsVisible] = useState(false)
+  const [logsVisible, setLogsVisible] = useState(false)
+
+  const commentsRef = useRef<any>(null)
+
+  useEffect(() => {
+    // scroll dialogRef on bottom
+    setTimeout(() => {
+      // @ts-ignore
+      commentsRef.current?.scrollTo(0, commentsRef.current.scrollHeight)
+    }, 100)
+  }, [data?.comments?.length, commentsVisible])
 
   useEffect(() => {
     if (data && !data.user) {
@@ -60,6 +79,7 @@ const User = () => {
       rejectIcon: 'pi pi-times',
       acceptIcon: 'pi pi-check',
       acceptLabel: 'Oui (IRRÉVERSIBLE FAIS PAS LE CON)',
+      rejectLabel: 'Non',
       acceptClassName: 'p-button-danger',
       rejectClassName: 'p-button-secondary p-button-outlined',
       accept: () => {
@@ -102,12 +122,19 @@ const User = () => {
 
   return (
     <Container>
-      <h1>Fiche de {data.user.socialclubName}</h1>
+      <Header>
+        <h1>Fiche de {data.user.socialclubName}</h1>
+        <CustomButton onClick={refetch} style={{ width: 'fit-content' }} aloneContent>
+          <i className='pi pi-sync' />
+        </CustomButton>
+      </Header>
 
       <StatsContainer>
         <StatCard title='Communauté' value='Membre' desc={`Depuis le ${new Date(data.user.insertionTime).toLocaleString()} (${Math.floor((Date.now() - data.user.insertionTime) / 86400000)} jours)`} icon='pi pi-user' />
-        <StatCard value={data.user.whitelistStatut} title='Whitelist' icon='pi pi-users' iconBg={buttonWhitelist?.iconBg} />
+        <StatCard value={data.user.whitelistStatut} title='Whitelist' icon='pi pi-shield' iconBg={buttonWhitelist?.iconBg} buttonText='Voir les commentaires' buttonIcon='pi pi-shield' buttonOnClick={rights.dowhitelist ? () => setCommentsVisible(true) : null} />
+        <StatCard title='Administration' value='Logs' icon='pi pi-list' buttonText='Consulter les logs' buttonIcon='pi pi-list' buttonOnClick={() => setLogsVisible(true)} />
         <StatCard
+          title='Administration'
           value='Supprimer'
           icon='pi pi-trash'
           buttonText='Supprimer le compte'
@@ -120,9 +147,35 @@ const User = () => {
       <h2>Personnages</h2>
       {charactersLoading && <Loading />}
       <CharactersList>
-        {(!charactersLoading && characters?.list) && <Carousel value={characters.list} numVisible={3} numScroll={1} itemTemplate={characterTemplate} />}
+        {(!charactersLoading && characters?.list) && (
+          <Carousel
+            value={characters.list.sort(
+              (a: any, b: any) => b.online - a.online,
+            )}
+            numVisible={3}
+            numScroll={1}
+            itemTemplate={characterTemplate}
+          />
+        )}
       </CharactersList>
       <ConfirmPopup />
+
+      <WhitelistComment
+        id={parseInt(params.userId as string)}
+        titleName={data.user.socialclubName}
+        isVisible={commentsVisible}
+        onHide={() => setCommentsVisible(false)}
+        allComments={data.comments}
+        onSend={refetchMember}
+        ref={commentsRef}
+      />
+
+      <UserLogs
+        id={parseInt(params.userId as string)}
+        titleName={data.user.socialclubName}
+        isVisible={logsVisible}
+        onHide={() => setLogsVisible(false)}
+      />
     </Container>
   )
 }
@@ -136,9 +189,17 @@ const Container = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   padding: 1rem;
+`
+
+const Header = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
 
   h1 {
-    margin-bottom: 2rem;
+    margin-right: 1rem;
   }
 `
 

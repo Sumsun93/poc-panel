@@ -69,6 +69,9 @@ export const liveApi = createApi({
         method: 'POST',
       }),
     }),
+    getLogs: builder.query({
+      query: (id) => `/log/whitelist/${id}`,
+    }),
   }),
 })
 
@@ -80,4 +83,5 @@ export const {
   useNotifyCharacterMutation,
   useKickCharacterMutation,
   useBanCharacterMutation,
+  useLazyGetLogsQuery,
 } = liveApi

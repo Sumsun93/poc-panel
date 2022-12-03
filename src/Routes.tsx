@@ -1,13 +1,13 @@
 /**
  * Package import
  */
-import { Route, Routes as ReactRoutes } from 'react-router-dom'
+import { Route, Routes as ReactRoutes, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 /**
  * Local import
  */
-import { useEffect, useRef } from 'react'
+import { ReactElement, useEffect, useRef } from 'react'
 import { disconnect, setConnected, setToken } from '@/features/authSlice'
 import SideBar from '@/components/SideBar'
 import styled from 'styled-components'
@@ -22,14 +22,34 @@ import WantResetPassword from '@/pages/WantResetPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import { Toast } from 'primereact/toast'
 import { showToast } from '@/features/utilsSlice'
+import Loading from '@/components/Loading'
 
 /**
  * Component
  */
+const ProtectedRoute = ({ routeRight, children }: { routeRight: string, children: ReactElement }) => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { rights } = useSelector((state: any) => state.user)
+
+  useEffect(() => {
+    if (routeRight && !rights?.[routeRight]) {
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Vous n\'avez pas les droits pour accéder à cette page.', life: 50000 }))
+      navigate('/')
+    }
+  }, [dispatch, navigate, rights, routeRight])
+
+  if (routeRight && !rights?.[routeRight]) {
+    return null
+  }
+
+  return children
+}
+
 const Routes = () => {
   const dispatch = useDispatch()
   const { connected } = useSelector((state: any) => state.auth)
-  const { rights } = useSelector((state: any) => state.user)
+  const { rights, socialclubName } = useSelector((state: any) => state.user)
   const { toastValue } = useSelector((state: any) => state.utils)
   const { data: profilResult, error, isLoading: profilLoading } = useGetProfilQuery('', { skip: !connected })
   const { data: rightsResult, isLoading: rightsLoading } = useGetRightsQuery('', { skip: !connected })
@@ -80,21 +100,33 @@ const Routes = () => {
   }, [dispatch, error])
 
   if (profilLoading || rightsLoading) {
-    return <p>Loading...</p>
+    return (
+      <Container>
+        <Content>
+          <Loading />
+        </Content>
+      </Container>
+    )
   }
 
   return (
     <Container>
-      {connected && <SideBar />}
+      {(connected && rights && socialclubName) && <SideBar />}
       <Content>
-        <Toast ref={toastRef} position='top-center' />
+        <Toast ref={toastRef} position='top-center' style={{ zIndex: 1000 }} />
         <ReactRoutes>
-          {connected
+          {(connected && rights && socialclubName)
             ? (
               <>
                 {/* concat all routes in categories */}
-                {pages.reduce((acc: any, category) => [...acc, ...category.items], []).filter((item: any) => !item.right || rights[item.right]).map(({ Component, route, label }: any, index: number) => (
-                  <Route key={index} path={route} element={<Page title={label} Component={Component} />} />
+                {pages.reduce((acc: any, category) => [...acc, ...category.items], []).map(({ Component, route, label, right }: any, index: number) => (
+                  <Route
+                    key={index} path={route} element={
+                      <ProtectedRoute routeRight={right}>
+                        <Page title={label} Component={Component} />
+                      </ProtectedRoute>
+                    }
+                  />
                 ))}
                 <Route path='*' element={<Dashboard />} />
               </>

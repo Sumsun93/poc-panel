@@ -32,10 +32,12 @@ const Button = ({
   tooltip?: string,
 }) => {
   return (
-    // @ts-ignore
-    <CustomButton onClick={onClick} bgColor={gradient} color={extractColor(gradient)} style={style} aloneContent={aloneContent} disabled={disabled} className={className} tooltip={tooltip}>
-      {children}
-    </CustomButton>
+    <Container bgColor={gradient} aloneContent={aloneContent}>
+      {/* @ts-ignore */}
+      <CustomButton onClick={onClick} color={extractColor(gradient)} style={style} disabled={disabled} className={className} tooltip={tooltip}>
+        {children}
+      </CustomButton>
+    </Container>
   )
 }
 
@@ -45,24 +47,28 @@ const CustomButton = styled(ButtonComponent)`
   margin: 1rem 1rem 1rem;
 
 
-  ${({ bgColor, color, aloneContent }: { bgColor: string, color: string, aloneContent: boolean }) => bgColor && `
+  ${({ color }: { color: string }) => `
     background: transparent !important;
     border: 1px solid ${color};
     color: ${color};
-
-    i {
-      font-size: 1.5em;
-      margin-right: ${aloneContent ? '0' : '1rem'};
-    }
-
-    &:hover {
-      background: ${bgColor} !important;
-      border: 1px solid transparent !important;
-    }
 
     &:focus {
       box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px ${rgbToRgba(color, 0.2)}, 0 1px 2px 0 black !important;
   `}
 `
+
+const Container = styled.div(({ bgColor, aloneContent }: { bgColor: string, aloneContent: boolean }) => `
+  ${CustomButton} {
+    &:hover {
+      background: ${bgColor} !important;
+      border: 1px solid transparent !important;
+    }
+
+    i {
+      font-size: 1.5em;
+      margin-right: ${aloneContent ? '0' : '1rem'};
+    }
+  }
+`)
 
 export default Button

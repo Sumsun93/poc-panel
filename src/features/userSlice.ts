@@ -16,11 +16,11 @@ export interface UserState {
   whitelistStatut: string;
   whitelistNumber: number;
   adastra: number;
-  rights: {
-    memberlist: boolean;
-    globalmap: boolean;
-    dowhitelist: boolean;
-    discordaccess: boolean;
+  rights?: {
+    memberlist?: boolean;
+    globalmap?: boolean;
+    dowhitelist?: boolean;
+    discordaccess?: boolean;
   };
 }
 
@@ -30,7 +30,6 @@ const initialState: UserState = {
   whitelistStatut: '',
   whitelistNumber: 0,
   adastra: 0,
-  rights: { memberlist: false, globalmap: false, dowhitelist: false, discordaccess: false },
 }
 
 export const userSlice = createSlice({

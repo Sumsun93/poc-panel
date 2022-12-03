@@ -1,32 +1,178 @@
 /**
  * Package import
  */
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import Lottie from 'react-lottie'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { Character } from '@/types/user'
 import Button from '@/components/Button'
 import { AiOutlineNotification } from 'react-icons/ai'
-import { CiMedicalCross } from 'react-icons/ci'
 import { GiHandcuffs, GiHighKick, GiWaterDrop } from 'react-icons/gi'
 import { TbHammer } from 'react-icons/tb'
-import { FaHeartbeat } from 'react-icons/fa'
+import { FaHandHoldingMedical, FaHeartbeat } from 'react-icons/fa'
 import { IoRestaurant } from 'react-icons/io5'
-import noSignal from '@/assets/animations/nosignal.json'
+import { OverlayPanel } from 'primereact/overlaypanel'
+import { InputTextarea } from 'primereact/inputtextarea'
+import { useDispatch } from 'react-redux'
 
 /**
  * Local import
  */
+import noSignal from '@/assets/animations/nosignal.json'
 import LeaftletMap from '@/components/LeaftletMap'
+import {
+  useCuffCharacterMutation,
+  useReviveCharacterMutation,
+  useNotifyCharacterMutation,
+  useKickCharacterMutation,
+  useBanCharacterMutation,
+} from '@/services/live'
+import { showToast } from '@/features/utilsSlice'
+import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup'
 
 /**
  * Component
  */
 const CharacterCard = ({ character }: { character: Character }) => {
+  const dispatch = useDispatch()
+
+  const [triggerCuffCharacter, resultCuffCharacter] = useCuffCharacterMutation()
+  const [triggerReviveCharacter, resultReviveCharacter] = useReviveCharacterMutation()
+  const [triggerNotifyCharacter, resultNotifyCharacter] = useNotifyCharacterMutation()
+  const [triggerKickCharacter, resultKickCharacter] = useKickCharacterMutation()
+  const [triggerBanCharacter, resultBanCharacter] = useBanCharacterMutation()
+
+  const [notifyMessage, setNotifyMessage] = useState('')
+  const [kickMessage, setKickMessage] = useState('')
+
+  const notifyRef = useRef(null)
+  const kickRef = useRef(null)
+
+  useEffect(() => {
+    if (resultCuffCharacter.data) {
+      if (resultCuffCharacter.data.success) {
+        dispatch(
+          showToast({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Le joueur a bien été menotté/démenotter.',
+            life: 3000,
+          }),
+        )
+      } else {
+        dispatch(
+          showToast({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Une erreur est survenue.',
+            life: 3000,
+          }),
+        )
+      }
+    }
+  }, [dispatch, resultCuffCharacter.data])
+
+  useEffect(() => {
+    if (resultReviveCharacter.data) {
+      if (resultReviveCharacter.data.success) {
+        dispatch(
+          showToast({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Le joueur a bien été réanimé.',
+            life: 3000,
+          }),
+        )
+      } else {
+        dispatch(
+          showToast({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Une erreur est survenue.',
+            life: 3000,
+          }),
+        )
+      }
+    }
+  }, [dispatch, resultReviveCharacter.data])
+
+  useEffect(() => {
+    if (resultNotifyCharacter.data) {
+      if (resultNotifyCharacter.data.success) {
+        dispatch(
+          showToast({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Le joueur a bien été notifié.',
+            life: 3000,
+          }),
+        )
+      } else {
+        dispatch(
+          showToast({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Une erreur est survenue.',
+            life: 3000,
+          }),
+        )
+      }
+    }
+  }, [dispatch, resultNotifyCharacter.data])
+
+  useEffect(() => {
+    if (resultKickCharacter.data) {
+      if (resultKickCharacter.data.success) {
+        dispatch(
+          showToast({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Le joueur a bien été kick.',
+            life: 3000,
+          }),
+        )
+      } else {
+        dispatch(
+          showToast({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Une erreur est survenue.',
+            life: 3000,
+          }),
+        )
+      }
+    }
+  }, [dispatch, resultKickCharacter.data])
+
+  useEffect(() => {
+    if (resultBanCharacter.data) {
+      if (resultBanCharacter.data.success) {
+        dispatch(
+          showToast({
+            severity: 'success',
+            summary: 'Succès',
+            detail: 'Le joueur a bien été ban.',
+            life: 3000,
+          }),
+        )
+      } else {
+        dispatch(
+          showToast({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Une erreur est survenue.',
+            life: 3000,
+          }),
+        )
+      }
+    }
+  }, [dispatch, resultBanCharacter.data])
+
   const {
     id,
     teamspeak,
-    // online,
+    online,
     firstname,
     lastname,
     position,
@@ -44,9 +190,41 @@ const CharacterCard = ({ character }: { character: Character }) => {
     animationData: noSignal,
   }
 
+  const handleNotifyOpen = (event: React.MouseEvent<HTMLElement>) => {
+    // @ts-ignore
+    notifyRef.current?.toggle(event)
+  }
+
+  const handleKickOpen = (event: React.MouseEvent<HTMLElement>) => {
+    // @ts-ignore
+    kickRef.current?.toggle(event)
+  }
+
+  const handleBanOpen = (event: React.MouseEvent<HTMLElement>) => {
+    const confirm = confirmPopup({
+      target: event.currentTarget,
+      message: `Êtes-vous sûr de vouloir bannir ${firstname} ${lastname} ?`,
+      icon: 'pi pi-exclamation-triangle',
+      rejectIcon: 'pi pi-times',
+      acceptIcon: 'pi pi-check',
+      acceptLabel: 'Oui (IRRÉVERSIBLE FAIS PAS LE CON)',
+      rejectLabel: 'Non',
+      acceptClassName: 'p-button-danger',
+      rejectClassName: 'p-button-secondary p-button-outlined',
+      accept: () => {
+        triggerBanCharacter(id)
+      },
+    })
+
+    confirm.show()
+  }
+
   return (
     <Container>
-      <Snapshot />
+      <Snapshot online={online} />
+      <OnlineStatusText online={online}>
+        {online ? 'En ligne' : 'Hors ligne'}
+      </OnlineStatusText>
       <Name>
         {firstname}
         {' '}
@@ -102,25 +280,78 @@ const CharacterCard = ({ character }: { character: Character }) => {
         </Info>
       </Infos>
       <Actions>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Menotter' onClick={() => {}} gradient='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))'>
+        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Menotter' onClick={() => triggerCuffCharacter(id)} gradient='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))'>
           <GiHandcuffs />
         </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Réanimer' onClick={() => {}}>
-          <CiMedicalCross />
+        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Réanimer' onClick={() => triggerReviveCharacter(id)}>
+          <FaHandHoldingMedical />
         </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Notifier' onClick={() => {}} gradient='linear-gradient(195deg,rgb(178, 120, 212),rgb(146, 92, 177))'>
+        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Notifier' onClick={handleNotifyOpen} gradient='linear-gradient(195deg,rgb(178, 120, 212),rgb(146, 92, 177))'>
           <AiOutlineNotification />
         </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Kick' onClick={() => {}} gradient='linear-gradient(195deg,rgb(255, 189, 103),rgb(255, 193, 21))'>
+        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Kick' onClick={handleKickOpen} gradient='linear-gradient(195deg,rgb(255, 189, 103),rgb(255, 193, 21))'>
           <GiHighKick />
         </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Ban' onClick={() => {}} gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))'>
+        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Ban' onClick={handleBanOpen} gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))'>
           <TbHammer />
         </Button>
       </Actions>
+
+      <OverlayPanel ref={notifyRef}>
+        <PanelContent>
+          <InputTextarea placeholder='Écrivez un message...' rows={5} cols={30} autoResize style={{ marginBottom: '1rem', width: '100%' }} value={notifyMessage} onChange={(event) => setNotifyMessage(event.target.value)} />
+          <Button
+            style={{ width: 'fit-content' }} onClick={() => {
+              triggerNotifyCharacter({ characterId: id, message: notifyMessage })
+              setNotifyMessage('')
+              // @ts-ignore
+              notifyRef.current?.hide()
+            }}
+          >
+            <>
+              Envoyer
+            </>
+          </Button>
+        </PanelContent>
+      </OverlayPanel>
+
+      <OverlayPanel ref={kickRef}>
+        <PanelContent>
+          <InputTextarea placeholder='Écrivez une raison...' rows={5} cols={30} autoResize style={{ marginBottom: '1rem', width: '100%' }} value={kickMessage} onChange={(event) => setKickMessage(event.target.value)} />
+          <Button
+            style={{ width: 'fit-content' }} onClick={() => {
+              setKickMessage('')
+              triggerKickCharacter({ characterId: id, reason: kickMessage })
+              // @ts-ignore
+              kickRef.current?.hide()
+            }}
+          >
+            <>
+              Kicker
+            </>
+          </Button>
+        </PanelContent>
+      </OverlayPanel>
+
+      <ConfirmPopup />
     </Container>
   )
 }
+
+const onlineBubblePulse = keyframes`
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(67, 160, 71, 1);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(67, 160, 71, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(67, 160, 71, 0);
+  }
+`
 
 const Container = styled.div`
   position: relative;
@@ -128,7 +359,7 @@ const Container = styled.div`
   border-radius: .75rem;
   box-shadow: rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem;
   padding: calc(128px - 32px + 1rem) 1rem 1rem 1rem;
-  margin: 32px 10px 0 10px;
+  margin: 42px 10px 10px 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -144,6 +375,32 @@ const Snapshot = styled.div`
   width: 128px;
   height: 128px;
   box-shadow: rgb(0 0 0 / 10%) 0 0.25rem 0.375rem -0.0625rem, rgb(0 0 0 / 6%) 0 0.125rem 0.25rem -0.0625rem;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: .75rem;
+    background-color: transparent;
+    animation: ${({ online }: { online: boolean }) => online ? onlineBubblePulse : 'none'} 2s infinite;
+    ${({ online }: { online: boolean }) => !online && 'box-shadow: 0 0 10px rgba(202, 44, 44, 0.5);'}
+  }
+`
+
+const OnlineStatusText = styled.span`
+  position: absolute;
+  top: calc(128px - 32px - 1rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${({ online }: { online: boolean }) => online ? 'rgb(67,160,71)' : 'rgb(202,44,44)'};
+  font-size: .7rem;
+  font-weight: 700;
+  ${({ online }: { online: boolean }) => online && 'text-shadow: 0 0 10px rgb(67,160,71);'}
+  margin: 0 0 1rem 0;
 `
 
 const Name = styled.h2`
@@ -200,6 +457,14 @@ const Actions = styled.div`
   justify-content: center;
   align-items: center;
   margin-top: 1rem;
+`
+
+const PanelContent = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `
 
 export default CharacterCard
