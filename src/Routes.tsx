@@ -34,7 +34,7 @@ const ProtectedRoute = ({ routeRight, children }: { routeRight: string, children
 
   useEffect(() => {
     if (routeRight && !rights?.[routeRight]) {
-      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Vous n\'avez pas les droits pour accéder à cette page.', life: 50000 }))
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Vous n\'avez pas les droits pour accéder à cette page.', life: 3000 }))
       navigate('/')
     }
   }, [dispatch, navigate, rights, routeRight])
