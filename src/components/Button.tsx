@@ -21,6 +21,7 @@ const Button = ({
   disabled = false,
   className = '',
   tooltip,
+  type = 'button',
 }: {
   children: JSX.Element,
   onClick: Function,
@@ -30,11 +31,12 @@ const Button = ({
   disabled?: boolean,
   className?: string,
   tooltip?: string,
+  type?: 'button' | 'submit' | 'reset',
 }) => {
   return (
     <Container bgColor={gradient} aloneContent={aloneContent}>
       {/* @ts-ignore */}
-      <CustomButton onClick={onClick} color={extractColor(gradient)} style={style} disabled={disabled} className={className} tooltip={tooltip}>
+      <CustomButton type={type} onClick={onClick} color={extractColor(gradient)} style={style} disabled={disabled} className={className} tooltip={tooltip}>
         {children}
       </CustomButton>
     </Container>

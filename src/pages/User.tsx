@@ -108,7 +108,7 @@ const User = () => {
 
   const characterTemplate = (character: Character) => (
     <CharacterCard
-      character={character}
+      characterId={character.id}
     />
   )
 

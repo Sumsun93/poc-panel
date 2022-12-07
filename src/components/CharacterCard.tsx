@@ -5,13 +5,13 @@ import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import Lottie from 'react-lottie'
 import styled, { keyframes } from 'styled-components'
-import { Character } from '@/types/user'
 import Button from '@/components/Button'
 import { AiOutlineNotification } from 'react-icons/ai'
 import { GiHandcuffs, GiHighKick, GiWaterDrop } from 'react-icons/gi'
 import { TbHammer } from 'react-icons/tb'
 import { FaHandHoldingMedical, FaHeartbeat } from 'react-icons/fa'
 import { IoRestaurant } from 'react-icons/io5'
+import { FiEdit } from 'react-icons/fi'
 import { OverlayPanel } from 'primereact/overlaypanel'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { useDispatch } from 'react-redux'
@@ -27,15 +27,180 @@ import {
   useNotifyCharacterMutation,
   useKickCharacterMutation,
   useBanCharacterMutation,
+  useUpdateCharacterMutation,
+  useGetCharacterQuery,
 } from '@/services/live'
 import { showToast } from '@/features/utilsSlice'
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup'
+import { Controller, useForm, Validate } from 'react-hook-form'
+import classNames from 'classnames'
+import { InputText } from 'primereact/inputtext'
+import Loading from '@/components/Loading'
 
 /**
  * Component
  */
-const CharacterCard = ({ character }: { character: Character }) => {
+interface FormValues {
+  firstname: string,
+  lastname: string,
+  hunger: number,
+  thirst: number,
+  health: number,
+  dimension: number,
+}
+
+type inputType = {
+  name: keyof FormValues
+  label: string
+  type?: string
+  required?: string
+  pattern?: RegExp
+  validate?: Validate<string>
+}
+
+const EditForm = ({ defaultValues, handleCancel, id }: {
+  defaultValues: FormValues
+  handleCancel: () => void
+  id: number
+}) => {
+  const [updateCharacter] = useUpdateCharacterMutation()
+  const { control, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ defaultValues })
+
+  const onCancel = () => {
+    reset()
+    handleCancel()
+  }
+
+  const onSubmit = async (data: any) => {
+    const { firstname, lastname, hunger, thirst, health, dimension } = data
+
+    const infos = {
+      firstname,
+      lastname,
+      hunger: parseInt(hunger),
+      thirst: parseInt(thirst),
+      health: parseInt(health),
+      dimension: parseInt(dimension),
+      // TODO: voir avec Babooche car pas l'info
+      cash: 1,
+      // TODO: voir avec Babooche car pas l'info
+      age: 20,
+    }
+
+    await updateCharacter({
+      characterId: id,
+      infos,
+    })
+    reset()
+  }
+
+  const getFormErrorMessage = (name: keyof FormValues) => {
+    return errors[name] && <small className='p-error' style={{ position: 'absolute', bottom: '-1.2rem', width: '100%', fontSize: '.8rem' }}>{errors[name]?.message}</small>
+  }
+
+  const renderInput = (key: number, input: inputType) => (
+    <span key={key} style={{ position: 'relative', margin: '.3rem 0' }}>
+      <span className='p-float-label' style={{ width: '300px' }}>
+        <Controller
+          name={input.name}
+          control={control}
+          rules={{
+            required: input.required,
+            pattern: input.pattern,
+            // @ts-ignore
+            validate: input.validate,
+          }}
+          render={({ field, fieldState }) => (
+            <InputText style={{ width: '300px' }} type={input.type} id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.error })} />
+          )}
+        />
+        <label htmlFor={input.name}>{input.label}</label>
+      </span>
+      {getFormErrorMessage(input.name)}
+    </span>
+  )
+
+  const inputs: inputType[] = [
+    {
+      name: 'firstname',
+      label: 'Prénom',
+      required: 'Ce champ est requis',
+    },
+    {
+      name: 'lastname',
+      label: 'Nom',
+      required: 'Ce champ est requis',
+    },
+    {
+      name: 'hunger',
+      label: 'Faim',
+      type: 'number',
+      required: 'Ce champ est requis',
+      pattern: /^[0-9]*$/,
+      validate: (value: string) => {
+        if (value.length > 0 && (value.length > 3 || parseInt(value) > 100)) {
+          return 'La valeur doit être comprise entre 0 et 100'
+        }
+      },
+    },
+    {
+      name: 'thirst',
+      label: 'Soif',
+      type: 'number',
+      required: 'Ce champ est requis',
+      pattern: /^[0-9]*$/,
+      validate: (value: string) => {
+        if (value.length > 0 && (value.length > 3 || parseInt(value) > 100)) {
+          return 'La valeur doit être comprise entre 0 et 100'
+        }
+      },
+    },
+    {
+      name: 'health',
+      label: 'Santé',
+      type: 'number',
+      required: 'Ce champ est requis',
+      pattern: /^[0-9]*$/,
+      validate: (value: string) => {
+        if (value.length > 0 && (value.length > 3 || parseInt(value) > 200)) {
+          return 'La valeur doit être comprise entre 0 et 200'
+        }
+      },
+    },
+    {
+      name: 'dimension',
+      label: 'Dimension',
+      type: 'number',
+      required: 'Ce champ est requis',
+      pattern: /^[0-9]*$/,
+    },
+  ]
+
+  return (
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      {inputs.map((input, key) => renderInput(key, input))}
+      <FormActions>
+        <Button style={{ margin: '.5rem', width: 'fit-content' }} gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))' onClick={onCancel}>
+          <>
+            Annuler
+          </>
+        </Button>
+        <Button type='submit' style={{ margin: '.5rem', width: 'fit-content' }} onClick={() => {}}>
+          <>
+            Modifier
+          </>
+        </Button>
+      </FormActions>
+    </Form>
+  )
+}
+const CharacterCard = ({ characterId }: { characterId: number }) => {
   const dispatch = useDispatch()
+
+  const {
+    data: character,
+    isLoading,
+  } = useGetCharacterQuery(characterId)
 
   const [triggerCuffCharacter, resultCuffCharacter] = useCuffCharacterMutation()
   const [triggerReviveCharacter, resultReviveCharacter] = useReviveCharacterMutation()
@@ -43,6 +208,7 @@ const CharacterCard = ({ character }: { character: Character }) => {
   const [triggerKickCharacter, resultKickCharacter] = useKickCharacterMutation()
   const [triggerBanCharacter, resultBanCharacter] = useBanCharacterMutation()
 
+  const [isEditable, setIsEditable] = useState(false)
   const [notifyMessage, setNotifyMessage] = useState('')
   const [kickMessage, setKickMessage] = useState('')
 
@@ -169,6 +335,10 @@ const CharacterCard = ({ character }: { character: Character }) => {
     }
   }, [dispatch, resultBanCharacter.data])
 
+  if (isLoading) {
+    return <Loading />
+  }
+
   const {
     id,
     teamspeak,
@@ -223,79 +393,101 @@ const CharacterCard = ({ character }: { character: Character }) => {
     <Container>
       <Snapshot online={online} />
       <OnlineStatusText online={online}>
-        {online ? 'En ligne' : 'Hors ligne'}
+        {online ? 'En jeu' : 'Hors ligne'}
       </OnlineStatusText>
-      <Name>
-        {firstname}
-        {' '}
-        {lastname}
-        {' '}
-        ({id})
-      </Name>
-      <Infos>
-        {teamspeak && (
-          <Info>
-            Teamspeak:
-            {' '}
-            <span>
-              {teamspeak}
-            </span>
-          </Info>
-        )}
-        <MapContainer>
-          <LeaftletMap
-            layer='satellite'
-            markers={[{
-              key: id.toString(),
-              position: new L.LatLng(position.x, position.y),
-            }]}
-            positionValue={{ lat: position.x, lng: position.y }}
-            zoomValue={4}
+      {isEditable
+        ? (
+          <EditForm
+            defaultValues={{
+              firstname,
+              lastname,
+              hunger,
+              thirst,
+              health,
+              dimension,
+            }}
+            handleCancel={() => setIsEditable(false)}
+            id={id}
           />
-          {dimension !== 0 && (
-            <NoSignal>
-              <Lottie
-                options={defaultOptions}
-              />
-            </NoSignal>
+          )
+        : (
+          <>
+            <Name>
+              {firstname}
+              {' '}
+              {lastname}
+              {' '}
+              ({id})
+            </Name>
+            <Infos>
+              {teamspeak && (
+                <Info>
+                  Teamspeak:
+                  {' '}
+                  <span>
+                    {teamspeak}
+                  </span>
+                </Info>
+              )}
+              <MapContainer>
+                <LeaftletMap
+                  layer='satellite'
+                  markers={[{
+                    key: id.toString(),
+                    position: new L.LatLng(position.x, position.y),
+                  }]}
+                  positionValue={{ lat: position.x, lng: position.y }}
+                  zoomValue={4}
+                />
+                {dimension !== 0 && (
+                  <NoSignal>
+                    <Lottie
+                      options={defaultOptions}
+                    />
+                  </NoSignal>
+                )}
+              </MapContainer>
+              <Info>
+                <FaHeartbeat />
+                <span>
+                  {health / 200 * 100}%
+                </span>
+              </Info>
+              <Info>
+                <IoRestaurant />
+                <span>
+                  {hunger}%
+                </span>
+              </Info>
+              <Info>
+                <GiWaterDrop />
+                <span>
+                  {thirst}%
+                </span>
+              </Info>
+            </Infos>
+            <Actions>
+              <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Modifier' onClick={() => setIsEditable(true)} gradient='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))'>
+                <FiEdit />
+              </Button>
+              <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Menotter' onClick={() => triggerCuffCharacter(id)} gradient='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))'>
+                <GiHandcuffs />
+              </Button>
+              <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Réanimer' onClick={() => triggerReviveCharacter(id)}>
+                <FaHandHoldingMedical />
+              </Button>
+              <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Notifier' onClick={handleNotifyOpen} gradient='linear-gradient(195deg,rgb(178, 120, 212),rgb(146, 92, 177))'>
+                <AiOutlineNotification />
+              </Button>
+              <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Kick' onClick={handleKickOpen} gradient='linear-gradient(195deg,rgb(255, 189, 103),rgb(255, 193, 21))'>
+                <GiHighKick />
+              </Button>
+              <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Ban' onClick={handleBanOpen} gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))'>
+                <TbHammer />
+              </Button>
+            </Actions>
+          </>
           )}
-        </MapContainer>
-        <Info>
-          <FaHeartbeat />
-          <span>
-            {health / 200 * 100}%
-          </span>
-        </Info>
-        <Info>
-          <IoRestaurant />
-          <span>
-            {hunger}%
-          </span>
-        </Info>
-        <Info>
-          <GiWaterDrop />
-          <span>
-            {thirst}%
-          </span>
-        </Info>
-      </Infos>
-      <Actions>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Menotter' onClick={() => triggerCuffCharacter(id)} gradient='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))'>
-          <GiHandcuffs />
-        </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Réanimer' onClick={() => triggerReviveCharacter(id)}>
-          <FaHandHoldingMedical />
-        </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Notifier' onClick={handleNotifyOpen} gradient='linear-gradient(195deg,rgb(178, 120, 212),rgb(146, 92, 177))'>
-          <AiOutlineNotification />
-        </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Kick' onClick={handleKickOpen} gradient='linear-gradient(195deg,rgb(255, 189, 103),rgb(255, 193, 21))'>
-          <GiHighKick />
-        </Button>
-        <Button style={{ fontSize: '2rem', width: 'fit-content', margin: '.5rem' }} tooltip='Ban' onClick={handleBanOpen} gradient='linear-gradient(195deg,rgb(233, 86, 86),rgb(202, 44, 44))'>
-          <TbHammer />
-        </Button>
-      </Actions>
 
       <OverlayPanel ref={notifyRef}>
         <PanelContent>
@@ -365,6 +557,7 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   width: 365px;
+  height: 715px;
 `
 
 const Snapshot = styled.div`
@@ -465,6 +658,23 @@ const PanelContent = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+`
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  gap: 30px;
+`
+
+const FormActions = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 `
 
 export default CharacterCard

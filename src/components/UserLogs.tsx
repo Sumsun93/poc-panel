@@ -7,7 +7,7 @@ import { Dialog } from 'primereact'
 /**
  * Local import
  */
-import { useLazyGetLogsQuery } from '@/services/live'
+import { useGetLogsMutation } from '@/services/live'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 
@@ -20,7 +20,7 @@ const UserLogs = ({ id, titleName, isVisible, onHide }: {
   isVisible: boolean
   onHide: () => void
 }) => {
-  const [trigger, result] = useLazyGetLogsQuery()
+  const [trigger, result] = useGetLogsMutation()
 
   useEffect(() => {
     if (isVisible) {

@@ -26,6 +26,9 @@ export const liveApi = createApi({
     getServerStatus: builder.query({
       query: () => '/live/status',
     }),
+    getCharacter: builder.query({
+      query: (id: number) => `/live/characters/${id}`,
+    }),
     updateCharacter: builder.mutation({
       query: (data) => ({
         url: `/live/characters/${data.characterId}`,
@@ -69,19 +72,23 @@ export const liveApi = createApi({
         method: 'POST',
       }),
     }),
-    getLogs: builder.query({
-      query: (id) => `/log/whitelist/${id}`,
+    getLogs: builder.mutation({
+      query: (id) => ({
+        url: `/log/whitelist/${id}`,
+        method: 'POST',
+      }),
     }),
   }),
 })
 
 export const {
   useGetServerStatusQuery,
+  useGetCharacterQuery,
   useUpdateCharacterMutation,
   useCuffCharacterMutation,
   useReviveCharacterMutation,
   useNotifyCharacterMutation,
   useKickCharacterMutation,
   useBanCharacterMutation,
-  useLazyGetLogsQuery,
+  useGetLogsMutation,
 } = liveApi
