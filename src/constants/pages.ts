@@ -7,6 +7,7 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import WantResetPassword from '@/pages/WantResetPassword'
 import ResetPassword from '@/pages/ResetPassword'
+import Session from '@/pages/Session'
 
 const pages = [
   {
@@ -73,6 +74,12 @@ const pages = [
         route: '/reset',
         label: 'Réinitialisation du mot de passe',
         Component: ResetPassword,
+      },
+      {
+        route: '/session/:id/:startTime/:endTime',
+        label: 'Session',
+        Component: Session,
+        right: 'memberlist',
       },
     ],
   },

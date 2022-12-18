@@ -63,6 +63,10 @@ const EditForm = ({ defaultValues, handleCancel, id }: {
   handleCancel: () => void
   id: number
 }) => {
+  const dispatch = useDispatch()
+  const {
+    refetch,
+  } = useGetCharacterQuery(id)
   const [updateCharacter] = useUpdateCharacterMutation()
   const { control, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ defaultValues })
 
@@ -75,8 +79,8 @@ const EditForm = ({ defaultValues, handleCancel, id }: {
     const { firstname, lastname, hunger, thirst, health, dimension } = data
 
     const infos = {
-      firstname,
-      lastname,
+      firstName: firstname,
+      lastName: lastname,
       hunger: parseInt(hunger),
       thirst: parseInt(thirst),
       health: parseInt(health),
@@ -87,11 +91,24 @@ const EditForm = ({ defaultValues, handleCancel, id }: {
       age: 20,
     }
 
-    await updateCharacter({
-      characterId: id,
-      infos,
-    })
-    reset()
+    try {
+      const result: any = await updateCharacter({
+        characterId: id,
+        infos,
+      })
+
+      if (!result.data.success) {
+        // @ts-ignore
+        throw new Error(result.data.message)
+      }
+
+      reset()
+      handleCancel()
+      dispatch(showToast({ severity: 'success', summary: 'Succès', detail: 'Le personnage a bien été modifié' }))
+      refetch()
+    } catch (error) {
+      dispatch(showToast({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue' }))
+    }
   }
 
   const getFormErrorMessage = (name: keyof FormValues) => {

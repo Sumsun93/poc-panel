@@ -2,8 +2,8 @@
  * Package import
  */
 import L from 'leaflet'
-import { useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, AttributionControl } from 'react-leaflet'
+import { useEffect, useMemo } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, AttributionControl, Polyline, useMap } from 'react-leaflet'
 import styled from 'styled-components'
 
 import 'leaflet/dist/leaflet.css'
@@ -21,6 +21,8 @@ type MarkerType = {
   icon?: L.Icon<L.IconOptions> | L.DivIcon,
   opacity?: number,
   key: string,
+  selected?: boolean,
+  label?: string,
 }
 
 /**
@@ -79,11 +81,29 @@ interface LeaftletMapProps {
   markers?: MarkerType[],
   zoomValue?: number,
   positionValue?: { lat: number, lng: number },
+  markerZoomIndex?: number | null,
 }
 
-const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat: 0, lng: 0 } } : LeaftletMapProps) => {
+const CustomMarker = ({ position, icon, opacity, key, selected, label }: MarkerType) => {
+  const map = useMap()
+
+  useEffect(() => {
+    if (selected) {
+      map.setView(position, 5)
+    }
+  }
+  , [selected, position, map])
+
+  return (
+    <Marker opacity={opacity} key={key} position={position} icon={icon}>
+      {label && <Popup>{label}</Popup>}
+    </Marker>
+  )
+}
+
+const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat: 0, lng: 0 }, markerZoomIndex } : LeaftletMapProps) => {
   const minZoom = 0
-  const maxZoom = 5
+  const maxZoom = 10
 
   const markerList = useMemo(() => {
     return markers.map((marker: MarkerType) => ({
@@ -91,35 +111,33 @@ const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat
       key: marker.key,
       opacity: marker.opacity || 1,
       icon: L.icon({
-        iconUrl: defaultIcon,
-        iconSize: [24, 24],
-        iconAnchor: [24, 24],
+        iconUrl: marker.icon?.options.iconUrl ? marker.icon.options.iconUrl : defaultIcon,
+        iconSize: [15, 15],
+        iconAnchor: [15, 15],
       }),
+      label: marker.label,
     }))
   }, [markers])
 
-  const [isInteractable, setIsInteractable] = useState(true)
-  const [latLng, setLatLng] = useState(positionValue)
-  const [backgroundColor, setBackgroundColor] = useState()
-  const [zoom, setZoom] = useState(zoomValue)
-  const [curLayer, setCurLayer] = useState(_layers[layer])
+  const latLng = useMemo(() => positionValue, [positionValue])
+  const zoom = useMemo(() => zoomValue, [zoomValue])
+  const curLayer = useMemo(() => _layers[layer], [layer])
   const position = new L.LatLng(latLng.lat, latLng.lng)
 
   const mapIsReady = () => {
-
   }
 
   return (
     <StyledMapContainer>
       <NorthPoint />
       <MapContainer
-        doubleClickZoom={isInteractable}
-        closePopupOnClick={isInteractable}
-        dragging={isInteractable}
-        zoomSnap={+isInteractable}
-        trackResize={isInteractable}
-        touchZoom={isInteractable}
-        scrollWheelZoom={isInteractable}
+        doubleClickZoom
+        closePopupOnClick
+        dragging
+        zoomSnap={0.5}
+        trackResize
+        touchZoom
+        scrollWheelZoom
         className='map'
         crs={_crs}
         center={position}
@@ -130,22 +148,41 @@ const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat
           backgroundColor: curLayer.background,
         }}
         zoom={zoom}
+        minZoom={minZoom}
+        maxZoom={maxZoom}
       >
         <TileLayer
           url={curLayer.url}
           minZoom={minZoom}
           maxZoom={maxZoom}
+          maxNativeZoom={5}
           noWrap
           tms
           tileSize={256}
         />
         <AttributionControl position='bottomleft' prefix='teste' />
 
-        {markerList.map(item => (
-          <Marker opacity={item.opacity} key={item.key} position={item.position} icon={item.icon}>
-            <Popup>{item.key}<br />{item.position.lng}, {item.position.lat}</Popup>
-          </Marker>
+        {markerList.map((item, index) => (
+          <CustomMarker
+            key={item.key}
+            position={item.position}
+            icon={item.icon}
+            opacity={item.opacity}
+            selected={markerZoomIndex === index}
+            label={item.label}
+          />
         ))}
+
+        {/* draw line between markers */}
+        {markers.length > 1 && (
+          <Polyline
+            positions={markers.map((marker) => marker.position)}
+            color='#FFC115'
+            weight={3}
+            opacity={1}
+            smoothFactor={1}
+          />
+        )}
       </MapContainer>
     </StyledMapContainer>
   )
@@ -198,6 +235,13 @@ const StyledMapContainer = styled(MapContainer)`
 
   .leaflet-control-attribution {
     display: none;
+  }
+
+  .custom-marker {
+    .pi {
+      color: #FFC115 !important;
+    }
+  ;
   }
 `
 

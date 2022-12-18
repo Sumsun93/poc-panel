@@ -18,7 +18,7 @@ import { Member } from '@/services/community'
 import { Rating } from 'primereact/rating'
 import { useSelector } from 'react-redux'
 import { Tooltip } from 'primereact/tooltip'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Lottie from 'react-lottie'
 
 /**
@@ -144,6 +144,7 @@ const Whitelist = () => {
   const [triggerStopSession, resultStopSession] = useLazyStopSessionsQuery()
   const [triggerSyncAllMembers] = useLazySyncAllMembersQuery()
   const location = useLocation()
+  const navigate = useNavigate()
 
   const dialogRef = useRef<any>(null)
   const startRef = useRef(null)
@@ -217,10 +218,20 @@ const Whitelist = () => {
 
   const actionBodyTemplate = (rowData: any) => {
     return (
-      <>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <CustomButton
           aloneContent
-          style={{ width: 'fit-content', margin: '0' }}
+          style={{ width: 'fit-content', margin: '0 .2rem' }}
+          onClick={() => {
+            navigate(`/user/${rowData.id}`)
+          }}
+        >
+          <i className='pi pi-user' style={{ fontSize: '1rem' }} />
+        </CustomButton>
+        <CustomButton
+          aloneContent
+          style={{ width: 'fit-content', margin: '0 .2rem' }}
+          gradient='linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))'
           onClick={() => {
             setCommentsVisible(true)
             // scroll dialogRef on bottom
@@ -233,7 +244,7 @@ const Whitelist = () => {
         >
           <i style={{ fontSize: '1rem' }} className='pi pi-comments' />
         </CustomButton>
-      </>
+      </div>
     )
   }
 

@@ -72,10 +72,27 @@ export const liveApi = createApi({
         method: 'POST',
       }),
     }),
+
     getLogs: builder.mutation({
       query: (id) => ({
         url: `/log/whitelist/${id}`,
         method: 'POST',
+      }),
+    }),
+    getSessions: builder.mutation({
+      query: (id) => ({
+        url: `/log/whitelist/${id}/sessions`,
+        method: 'POST',
+      }),
+    }),
+    getLogsCharacter: builder.mutation({
+      query: ({ id, startTime, endTime }: { id: number, startTime: number, endTime: number }) => ({
+        url: `/log/whitelist/characters/${id}`,
+        method: 'POST',
+        body: {
+          startTime,
+          endTime,
+        },
       }),
     }),
   }),
@@ -91,4 +108,6 @@ export const {
   useKickCharacterMutation,
   useBanCharacterMutation,
   useGetLogsMutation,
+  useGetSessionsMutation,
+  useGetLogsCharacterMutation,
 } = liveApi
