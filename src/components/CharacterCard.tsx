@@ -450,7 +450,6 @@ const CharacterCard = ({ characterId }: { characterId: number }) => {
                 <LeaftletMap
                   layer='satellite'
                   markers={[{
-                    key: id.toString(),
                     position: new L.LatLng(position.x, position.y),
                   }]}
                   positionValue={{ lat: position.x, lng: position.y }}

@@ -2,8 +2,9 @@
  * Package import
  */
 import L from 'leaflet'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, AttributionControl, Polyline, useMap } from 'react-leaflet'
+import MarkerClusterGroup from 'react-leaflet-cluster'
 import styled from 'styled-components'
 
 import 'leaflet/dist/leaflet.css'
@@ -20,7 +21,6 @@ type MarkerType = {
   position: L.LatLng,
   icon?: L.Icon<L.IconOptions> | L.DivIcon,
   opacity?: number,
-  key: string,
   selected?: boolean,
   label?: string,
 }
@@ -84,7 +84,7 @@ interface LeaftletMapProps {
   markerZoomIndex?: number | null,
 }
 
-const CustomMarker = ({ position, icon, opacity, key, selected, label }: MarkerType) => {
+const CustomMarker = ({ position, icon, opacity, selected, label }: MarkerType) => {
   const map = useMap()
 
   useEffect(() => {
@@ -95,7 +95,7 @@ const CustomMarker = ({ position, icon, opacity, key, selected, label }: MarkerT
   , [selected, position, map])
 
   return (
-    <Marker opacity={opacity} key={key} position={position} icon={icon}>
+    <Marker opacity={opacity} position={position} icon={icon}>
       {label && <Popup>{label}</Popup>}
     </Marker>
   )
@@ -106,9 +106,9 @@ const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat
   const maxZoom = 10
 
   const markerList = useMemo(() => {
-    return markers.map((marker: MarkerType) => ({
+    return markers.map((marker: MarkerType, index) => ({
       position: marker.position,
-      key: marker.key,
+      key: `${index}`,
       opacity: marker.opacity || 1,
       icon: L.icon({
         iconUrl: marker.icon?.options.iconUrl ? marker.icon.options.iconUrl : defaultIcon,
@@ -126,6 +126,23 @@ const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat
 
   const mapIsReady = () => {
   }
+
+  const Markers = useCallback(() => (
+    <MarkerClusterGroup>
+      {markerList.map((item, index) => (
+        <CustomMarker
+          key={item.key}
+          position={item.position}
+          icon={item.icon}
+          opacity={item.opacity}
+          selected={markerZoomIndex === index}
+          label={item.label}
+        />
+      ))}
+    </MarkerClusterGroup>
+  ),
+  [markerList, markerZoomIndex],
+  )
 
   return (
     <StyledMapContainer>
@@ -162,16 +179,7 @@ const LeaftletMap = ({ layer, markers = [], zoomValue = 1, positionValue = { lat
         />
         <AttributionControl position='bottomleft' prefix='teste' />
 
-        {markerList.map((item, index) => (
-          <CustomMarker
-            key={item.key}
-            position={item.position}
-            icon={item.icon}
-            opacity={item.opacity}
-            selected={markerZoomIndex === index}
-            label={item.label}
-          />
-        ))}
+        <Markers />
 
         {/* draw line between markers */}
         {markers.length > 1 && (

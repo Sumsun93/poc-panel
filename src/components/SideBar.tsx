@@ -1,7 +1,7 @@
 /**
  * Package import
  */
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Button } from 'primereact/button'
 import { Avatar } from 'primereact/avatar'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,6 +29,8 @@ interface Category {
 }
 
 const SideBar = () => {
+  const [isMinimize, setIsMinimized] = useState(localStorage.getItem('isMinimized') === 'true')
+
   const { socialclubName, rights } = useSelector((state: any) => state.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -38,12 +40,20 @@ const SideBar = () => {
     navigate('/')
   }
 
+  const handleMinimize = () => {
+    setIsMinimized((value) => {
+      localStorage.setItem('isMinimized', (!value).toString())
+
+      return !value
+    })
+  }
+
   const renderCategories = ({ title, items }: Category) => {
     const authItems = items.filter((item) => !item.right || rights[item.right])
     if (authItems.length) {
       return (
         <>
-          {title && <Title>{title}</Title>}
+          {title && <Title>{isMinimize ? '' : title}</Title>}
           {authItems.map((item, index) => (
             <NavButton
               onClick={() => {
@@ -51,10 +61,14 @@ const SideBar = () => {
                 if (window.location.pathname === item.route) {
                   navigate('/')
                 }
-              }} to={item.route} key={index} end
+              }}
+              to={item.route}
+              key={index}
+              end
+              style={{ justifyContent: isMinimize ? 'center' : 'flex-start' }}
             >
               <i className={item.icon} />
-              {item.label}
+              {!isMinimize && <p>{item.label}</p>}
             </NavButton>
           ))}
         </>
@@ -63,12 +77,12 @@ const SideBar = () => {
   }
 
   return (
-    <Container>
+    <Container style={{ width: isMinimize ? '100px' : '250px', marginLeft: isMinimize ? 0 : '1rem', borderTopLeftRadius: isMinimize ? 0 : '0.75rem', borderBottomLeftRadius: isMinimize ? 0 : '0.75rem' }}>
       <Logo src={logo} />
       <Divider />
-      <User>
+      <User style={{ justifyContent: isMinimize ? 'center' : 'flex-start' }}>
         <Avatar icon='pi pi-user' className='mr-2' shape='circle' />
-        <Username>{socialclubName}</Username>
+        {!isMinimize && <Username>{socialclubName}</Username>}
       </User>
       <Divider />
 
@@ -80,8 +94,17 @@ const SideBar = () => {
 
       <DisconnectButton className='p-button-danger p-button-outlined' onClick={handleDisconnect}>
         <i className='pi pi-sign-out mr-2' />
-        Se déconnecter
+        {!isMinimize && 'Se déconnecter'}
       </DisconnectButton>
+
+      <MinimizeButton
+        className='p-button-secondary p-button-outlined'
+        onClick={handleMinimize}
+      >
+        <i className={`pi pi-angle-${isMinimize ? 'right' : 'left'}`} />
+        {!isMinimize && <p>Minimiser</p>}
+      </MinimizeButton>
+
       <Version>
         v0.1.0
       </Version>
@@ -97,12 +120,12 @@ const Container = styled.div`
   align-items: center;
   margin: 1rem;
   padding: 1rem;
-  width: 250px;
   height: calc(100vh - 2rem);
   background: linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25));
   box-shadow: rgb(0 0 0 / 5%) 0 1.25rem 1.6875rem 0;
   border-radius: 0.75rem;
   font-size: 0.875rem;
+  transition: .2s;
 
   .active {
     background: rgba(255, 193, 21, 0.5);
@@ -111,8 +134,8 @@ const Container = styled.div`
 `
 
 const Logo = styled.img`
-  width: 100%;
-  padding: 0 3rem 0 3rem;
+  max-width: 100%;
+  max-height: 150px;
 `
 
 const Title = styled.span`
@@ -147,7 +170,10 @@ const NavButton = styled(NavLink)`
 
   i {
     font-size: 1.5rem;
-    margin-right: 1rem;
+  }
+
+  p {
+    margin: 0 0 0 1rem;
   }
 
   &:hover {
@@ -157,16 +183,41 @@ const NavButton = styled(NavLink)`
 
 const DisconnectButton = styled(Button)`
   position: absolute;
-  bottom: 2.5rem;
+  bottom: 6rem;
   width: calc(100% - 2rem);
   display: flex;
   justify-content: space-evenly;
   align-items: center;
 `
 
+const MinimizeButton = styled(Button)`
+  position: absolute;
+  bottom: 2.5rem;
+  width: calc(100% - 2rem);
+  color: rgb(255, 255, 255) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1rem;
+  margin: 0.09375rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+
+  p {
+    margin: 0 0 0 .5rem;
+  }
+
+  &:hover {
+    background: rgba(255, 193, 21, 0.5) !important;
+  }
+`
+
 const User = styled.div`
   display: flex;
-  justify-content: flex-start;
   align-items: center;
   width: 100%;
   padding: 0 1rem;

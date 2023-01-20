@@ -63,7 +63,7 @@ const Session = () => {
         <ActionsList>
           {actionsReverse.map((action: any, index: number) => (
             <Action
-              key={action.time}
+              key={`${index}-${action.time}`}
               onClick={() => setMarkerSelected(index)}
               selected={markerSelected === index}
             >
